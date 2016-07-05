@@ -24,10 +24,9 @@ void cli_history_push(cli_history *hist, const char *line)
     else
         ++hist->size;
     hist->data[hist->end] = strdup(line);
+    ++hist->end;
     if (hist->end == hist->allocated)
         hist->end = 0;
-    else
-        ++hist->end;
 }
 
 const char *cli_history_index(cli_history *hist, size_t index)

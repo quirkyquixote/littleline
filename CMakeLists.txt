@@ -11,22 +11,22 @@ project (COMMANDLINE C)
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=gnu99")
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wfatal-errors")
 
-# execute_process(
-#     COMMAND git rev-parse --abbrev-ref HEAD
-#     COMMAND tr -d '\n'
-#     OUTPUT_VARIABLE PACKAGE_BRANCH
-#     )
-# 
-# execute_process(
-#     COMMAND git log -1 --pretty=format:%H
-#     OUTPUT_VARIABLE PACKAGE_COMMIT
-#     )
-# 
-# execute_process(
-#     COMMAND git describe --abbrev=0 --tags
-#     COMMAND tr -d '\n'
-#     OUTPUT_VARIABLE PACKAGE_VERSION
-#     )
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    COMMAND tr -d '\n'
+    OUTPUT_VARIABLE PACKAGE_BRANCH
+    )
+
+execute_process(
+    COMMAND git log -1 --pretty=format:%H
+    OUTPUT_VARIABLE PACKAGE_COMMIT
+    )
+
+execute_process(
+    COMMAND git describe --abbrev=0 --tags
+    COMMAND tr -d '\n'
+    OUTPUT_VARIABLE PACKAGE_VERSION
+    )
 
 set(PACKAGE_VERSION 0.9.0)
 string(REGEX MATCH "[0-9]*.[0-9]*" PACKAGE_VERSION_SUFFIX ${PACKAGE_VERSION})
