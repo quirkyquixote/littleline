@@ -245,7 +245,7 @@ static const char *push_line(cli_context * cli)
         cli_history_push(cli->history, cli->current);
         retval = cli_history_index(cli->history, cli->history->size - 1);
     }
-    cli_buf_assign(cli->buffer, "", 1);
+    cli_buf_assign(cli->buffer, "", 0);
     cli->current = cli->buffer->str;
     cli->focus = cli->history->size;
     cli->cursor = 0;
@@ -255,7 +255,7 @@ static const char *push_line(cli_context * cli)
 static int kill_forward(cli_context *cli, const char *str, size_t len)
 {
     if ((cli->old_flags & CLI_CLI_KILL) == 0)
-        cli_buf_assign(cli->clipboard, "", 1);
+        cli_buf_assign(cli->clipboard, "", 0);
     cli_buf_append(cli->clipboard, str, len);
     cli->flags |= CLI_CLI_KILL;
     return 0;
@@ -264,7 +264,7 @@ static int kill_forward(cli_context *cli, const char *str, size_t len)
 static int kill_backward(cli_context *cli, const char *str, size_t len)
 {
     if ((cli->old_flags & CLI_CLI_KILL) == 0)
-        cli_buf_assign(cli->clipboard, "", 1);
+        cli_buf_assign(cli->clipboard, "", 0);
     cli_buf_prepend(cli->clipboard, str, len);
     cli->flags |= CLI_CLI_KILL;
     return 0;
@@ -542,7 +542,7 @@ int cli_forward_kill_line(void)
     pop_line(cli);
     size_t len = cli->buffer->len - cli->cursor;
     kill_forward(cli, cli->buffer->str + cli->cursor, len);
-    cli_buf_erase(cli->buffer, cli->cursor, -1);
+    cli_buf_erase(cli->buffer, cli->cursor, cli->buffer->len);
     cli->current = cli->buffer->str;
     return 0;
 }

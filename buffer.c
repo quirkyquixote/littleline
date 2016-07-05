@@ -41,7 +41,7 @@ void cli_buf_insert(cli_buf *buf, size_t where, const void *str, size_t len)
     cli_buf_grow(buf, buf->len + len + 1);
     memmove(buf->str + (where + len),
             buf->str + where,
-            buf->len - len + 1);
+            buf->len - where + 1);
     memcpy(buf->str + where, str, len);
     buf->len += len;
 }

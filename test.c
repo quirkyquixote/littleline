@@ -13,7 +13,7 @@ int main(int arc, char *argv[])
 
     const char *line;
     while (line = cli_read())
-        printf("%s\n", line);
+        puts(line);
 
     exit(EXIT_SUCCESS);
 }
