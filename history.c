@@ -19,6 +19,8 @@ void cli_history_free(cli_history *hist)
 
 void cli_history_push(cli_history *hist, const char *line)
 {
+    if (hist->size > 0 && strcmp(cli_history_index(hist, hist->size - 1), line) == 0)
+        return;
     if (hist->size == hist->allocated)
         free(hist->data[hist->end]);
     else

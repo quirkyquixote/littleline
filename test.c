@@ -12,8 +12,10 @@ int main(int arc, char *argv[])
     cli_set_history_file("history.txt");
 
     const char *line;
-    while (line = cli_read())
-        puts(line);
+    while (line = cli_read()) {
+        if (strlen(line) > 0)
+            puts(line);
+    }
 
     exit(EXIT_SUCCESS);
 }

@@ -123,7 +123,7 @@ static int bind_key(cli_context *cli, const char *seq, int(* func)(void));
 /* Copy the current line to the buffer */
 static int pop_line(cli_context *cli);
 /* Push the line currently being edited to the log and create a new one */
-static const char *push_line(cli_context *cli);
+static int push_line(cli_context *cli);
 /* Add the contents of str to the clipboard */
 static int kill_forward(cli_context *cli, const char *str, size_t len);
 /* Add the contents of str to the clipboard */
@@ -233,23 +233,13 @@ static int pop_line(cli_context * cli)
     return 0;
 }
 
-static const char *push_line(cli_context * cli)
+static int push_line(cli_context * cli)
 {
-    if (strlen(cli->current) == 0)
-        return NULL;
-    const char *retval = NULL;
-    if (cli->history->size == 0 ||
-        strcmp(cli_history_index(cli->history, cli->history->size - 1),
-               cli->current) != 0) {
-        pop_line(cli);
-        cli_history_push(cli->history, cli->current);
-        retval = cli_history_index(cli->history, cli->history->size - 1);
-    }
-    cli_buf_assign(cli->buffer, "", 0);
-    cli->current = cli->buffer->str;
-    cli->focus = cli->history->size;
-    cli->cursor = 0;
-    return retval;
+    pop_line(cli);
+    if (cli->log_file != NULL)
+        fprintf(cli->log_file, "%s\n", cli->current);
+    cli_history_push(cli->history, cli->current);
+    return 0;
 }
 
 static int kill_forward(cli_context *cli, const char *str, size_t len)
@@ -375,12 +365,16 @@ int cli_set_history_file(const char *path)
     setvbuf(cli->log_file, NULL, _IONBF, 0);
     fseek(cli->log_file, SEEK_SET, 0);
     int ch;
+    cli_buf *buf = cli_buf_new();
     while ((ch = fgetc(cli->log_file)) != EOF) {
-        if (ch == '\n')
-            push_line(cli);
-        else
-            insert_char(cli, ch);
+        if (ch == '\n') {
+            cli_history_push(cli->history, buf->str);
+            cli_buf_assign(buf, "", 0);
+        } else {
+            cli_buf_append_char(buf, ch);
+        }
     }
+    cli_buf_free(buf);
     return 0;
 }
 
@@ -390,6 +384,11 @@ const char *cli_read(void)
     int ch;
     int retval;
 
+    cli_buf_assign(cli->buffer, "", 0);
+    cli->current = cli->buffer->str;
+    cli->focus = cli->history->size;
+    cli->cursor = 0;
+
     do {
         print_line(cli);
         ch = keyboard_get(cli);
@@ -397,9 +396,12 @@ const char *cli_read(void)
         retval = handle_character(cli, ch);
     } while (retval == 0);
 
+    print_line(cli);
+    putchar('\n');
+
     if (retval < 0)
         return NULL;
-    return cli_history_index(cli->history, cli->history->size - 1);
+    return cli->buffer->str;
 }
 
 int cli_backward_char(void)
@@ -596,11 +598,7 @@ int cli_verbatim(void)
 int cli_accept_line(void)
 {
     cli_context *cli = get_cli();
-    print_line(cli);
-    putchar('\n');
-    const char *line = push_line(cli);
-    if (line != NULL && cli->log_file != NULL)
-        fprintf(cli->log_file, "%s\n", line);
+    push_line(cli);
     return 1;
 }
 
