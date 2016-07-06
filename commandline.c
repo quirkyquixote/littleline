@@ -15,8 +15,6 @@
 #include "buffer.h"
 #include "history.h"
 
-#define CLI_FLAG_KILL 0x00000001
-
 struct cli_context {
     /* 0 if not yet initialized */
     int initialized;
@@ -30,9 +28,8 @@ struct cli_context {
 #endif
     /* Key bindings */
     struct cli_fsm bindings;
-    /* These flags are used to pass state between keystrokes */
-    int flags;
-    int old_flags;
+    /* Last command executed */
+    int (* last_command)(void);
     /* All written lines */
     struct cli_history history;
     /* Index of the line currently being viewed */
@@ -116,10 +113,6 @@ static int handle_character(void);
 static int pop_line(void);
 /* Push the line currently being edited to the log and create a new one */
 static int push_line(void);
-/* Add the contents of str to the clipboard */
-static int kill_forward(const char *str, size_t len);
-/* Add the contents of str to the clipboard */
-static int kill_backward(const char *str, size_t len);
 /* Insert a string where the cursor is */
 static int insert_str(const char *str, size_t len);
 /* Insert a character where the cursor is */
@@ -213,24 +206,6 @@ static int push_line(void)
     return 0;
 }
 
-static int kill_forward(const char *str, size_t len)
-{
-    if ((cli.old_flags & CLI_FLAG_KILL) == 0)
-        cli_buf_assign(&cli.clipboard, "", 0);
-    cli_buf_append(&cli.clipboard, str, len);
-    cli.flags |= CLI_FLAG_KILL;
-    return 0;
-}
-
-static int kill_backward(const char *str, size_t len)
-{
-    if ((cli.old_flags & CLI_FLAG_KILL) == 0)
-        cli_buf_assign(&cli.clipboard, "", 0);
-    cli_buf_prepend(&cli.clipboard, str, len);
-    cli.flags |= CLI_FLAG_KILL;
-    return 0;
-}
-
 static int insert_str(const char *str, size_t len)
 {
     pop_line();
@@ -251,8 +226,6 @@ static int insert_char(int c)
 
 static int handle_character(void)
 {
-    cli.old_flags = cli.flags;
-    cli.flags = 0;
     unsigned char buf[8];
     size_t len = 0;
     int retval;
@@ -266,6 +239,7 @@ static int handle_character(void)
 
     if (retval == CLI_FSM_FINAL_STATE) {
         retval = func();
+        cli.last_command = func;
         if (retval < 0) {
             putchar(7);
             return 0;
@@ -273,6 +247,7 @@ static int handle_character(void)
         return retval;
     }
     insert_str(buf, len);
+    cli.last_command = NULL;
     return 0;
 }
 
@@ -317,8 +292,7 @@ const char *cli_read(const char *prompt)
 {
     if (cli.initialized == 0) {
         cli.initialized = 1;
-        cli.flags = 0;
-        cli.old_flags = 0;
+        cli.last_command = NULL;
         cli_buf_init(&cli.buffer);
         cli_buf_init(&cli.fmt_current);
         cli_buf_init(&cli.clipboard);
@@ -475,9 +449,14 @@ int cli_backward_delete_char(void)
 
 int cli_forward_kill_line(void)
 {
+    if (cli.current[cli.cursor] == 0)
+        return 0;
     pop_line();
     size_t len = cli.buffer.len - cli.cursor;
-    kill_forward(cli.buffer.str + cli.cursor, len);
+    if (cli.last_command == cli_forward_kill_word)
+        cli_buf_append(&cli.clipboard, cli.buffer.str + cli.cursor, len);
+    else
+        cli_buf_assign(&cli.clipboard, cli.buffer.str + cli.cursor, len);
     cli_buf_erase(&cli.buffer, cli.cursor, len);
     cli.current = cli.buffer.str;
     return 0;
@@ -485,8 +464,13 @@ int cli_forward_kill_line(void)
 
 int cli_backward_kill_line(void)
 {
+    if (cli.cursor == 0)
+        return 0;
     pop_line();
-    kill_backward(cli.buffer.str, cli.cursor);
+    if (cli.last_command == cli_backward_kill_word)
+        cli_buf_prepend(&cli.clipboard, cli.buffer.str, cli.cursor);
+    else
+        cli_buf_assign(&cli.clipboard, cli.buffer.str, cli.cursor);
     cli_buf_erase(&cli.buffer, 0, cli.cursor);
     cli.current = cli.buffer.str;
     cli.cursor = 0;
@@ -495,16 +479,34 @@ int cli_backward_kill_line(void)
 
 int cli_forward_kill_word(void)
 {
-    return -1;
+    if (cli.current[cli.cursor] == 0)
+        return 0;
+    pop_line();
+    int begin = cli.cursor;
+    cli_forward_word();
+    size_t len = cli.cursor - begin;
+    if (cli.last_command == cli_forward_kill_word)
+        cli_buf_append(&cli.clipboard, cli.buffer.str + begin, len);
+    else
+        cli_buf_assign(&cli.clipboard, cli.buffer.str + begin, len);
+    cli_buf_erase(&cli.buffer, begin, len);
+    cli.current = cli.buffer.str;
+    cli.cursor = begin;
+    return 0;
 }
 
 int cli_backward_kill_word(void)
 {
+    if (cli.cursor == 0)
+        return 0;
     pop_line();
     int end = cli.cursor;
     cli_backward_word();
     size_t len = end - cli.cursor;
-    kill_backward(cli.buffer.str + cli.cursor, len);
+    if (cli.last_command == cli_backward_kill_word)
+        cli_buf_prepend(&cli.clipboard, cli.buffer.str + cli.cursor, len);
+    else
+        cli_buf_assign(&cli.clipboard, cli.buffer.str + cli.cursor, len);
     cli_buf_erase(&cli.buffer, cli.cursor, len);
     cli.current = cli.buffer.str;
     return 0;
