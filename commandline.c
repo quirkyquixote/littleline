@@ -15,7 +15,7 @@
 #include "buffer.h"
 #include "history.h"
 
-#define CLI_CLI_KILL 0x00000001
+#define CLI_FLAG_KILL 0x00000001
 
 struct cli_context {
     /* 0 if not yet initialized */
@@ -131,7 +131,7 @@ static int keyboard_init(void)
     cli.unbuffered = cli.buffered;      /* unbuffered is the same as buffered but */
     cli.unbuffered.c_lflag &= (~ICANON);    /* disable "canonical" mode */
     cli.unbuffered.c_lflag &= (~ECHO);      /* don't echo the character */
-//    cli.unbuffered.c_lflag &= (~ISIG);      /* don't automatically handle ^C */
+    //    cli.unbuffered.c_lflag &= (~ISIG);      /* don't automatically handle ^C */
     cli.unbuffered.c_cc[VTIME] = 1; /* timeout (tenths of a second) */
     cli.unbuffered.c_cc[VMIN] = 0;  /* minimum number of characters */
     tcsetattr(0, TCSANOW, &cli.unbuffered);
@@ -211,19 +211,19 @@ static int push_line(void)
 
 static int kill_forward(const char *str, size_t len)
 {
-    if ((cli.old_flags & CLI_CLI_KILL) == 0)
+    if ((cli.old_flags & CLI_FLAG_KILL) == 0)
         cli_buf_assign(&cli.clipboard, "", 0);
     cli_buf_append(&cli.clipboard, str, len);
-    cli.flags |= CLI_CLI_KILL;
+    cli.flags |= CLI_FLAG_KILL;
     return 0;
 }
 
 static int kill_backward(const char *str, size_t len)
 {
-    if ((cli.old_flags & CLI_CLI_KILL) == 0)
+    if ((cli.old_flags & CLI_FLAG_KILL) == 0)
         cli_buf_assign(&cli.clipboard, "", 0);
     cli_buf_prepend(&cli.clipboard, str, len);
-    cli.flags |= CLI_CLI_KILL;
+    cli.flags |= CLI_FLAG_KILL;
     return 0;
 }
 
@@ -362,13 +362,13 @@ int cli_forward_word(void)
     if (cli.current[cli.cursor + 1] == 0)
         return -1;
     while (cli.current[cli.cursor] != 0
-           && !isalnum(cli.current[cli.cursor]))
+            && !isalnum(cli.current[cli.cursor]))
         ++cli.cursor;
     while (cli.current[cli.cursor] != 0
-           && isalnum(cli.current[cli.cursor]))
+            && isalnum(cli.current[cli.cursor]))
         ++cli.cursor;
     while (cli.current[cli.cursor] != 0
-           && !isalnum(cli.current[cli.cursor]))
+            && !isalnum(cli.current[cli.cursor]))
         ++cli.cursor;
     return 0;
 }
@@ -455,7 +455,7 @@ int cli_forward_kill_line(void)
     pop_line();
     size_t len = cli.buffer.len - cli.cursor;
     kill_forward(cli.buffer.str + cli.cursor, len);
-    cli_buf_erase(&cli.buffer, cli.cursor, cli.buffer.len - cli.cursor);
+    cli_buf_erase(&cli.buffer, cli.cursor, len);
     cli.current = cli.buffer.str;
     return 0;
 }

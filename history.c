@@ -13,7 +13,7 @@ void cli_history_init(struct cli_history *hist, size_t allocated)
 }
 
 int cli_history_init_with_file(struct cli_history *hist, size_t max_lines,
-                               const char *path)
+        const char *path)
 {
     cli_history_init(hist, max_lines);
     FILE *file = fopen(path, "a+");
