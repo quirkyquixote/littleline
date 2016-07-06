@@ -49,23 +49,19 @@
 #ifndef COMMANDLINE_H_
 #define COMMANDLINE_H_
 
-#include "history.h"
+#include <stdlib.h>
 
-/** Relationship between a character sequence and an action */
-typedef struct _cli_key_binding {
-    const char *seq;
-    int (*func) (void);
-} cli_key_binding;
+#include "fsm.h"
 
 /** Key bindings for ANSI escape sequences */
-extern cli_key_binding CLI_ANSI_KEY_BINDINGS[];
+extern struct cli_fsm_path CLI_ANSI_KEY_BINDINGS[];
 
 /** Set the maximum number of lines in the history */
 int cli_set_history(size_t max_lines);
 /** Set the maximum number of lines in the history */
 int cli_set_history_with_file(size_t max_lines, const char *path);
 /** Reconfigure key bindings */
-int cli_set_key_bindings(const cli_key_binding *bindings);
+int cli_set_key_bindings(const struct cli_fsm_path *bindings);
 
 /** Read a line */
 const char *cli_read(const char *prompt);

@@ -52,6 +52,6 @@ enable_testing()
 
 # The rest is in subdirectories
 #
-add_library(commandline commandline.c history.c buffer.c)
+add_library(commandline commandline.c history.c buffer.c fsm.c)
 add_executable(cltest test.c)
 target_link_libraries(cltest commandline)

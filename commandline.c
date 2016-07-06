@@ -17,17 +17,6 @@
 
 #define CLI_CLI_KILL 0x00000001
 
-#define CLI_FSM_INNER_STATE 0
-#define CLI_FSM_FINAL_STATE 1
-
-struct cli_fsm_state {
-    int type;
-    union {
-        struct cli_fsm_state **transitions;
-        int (*func) (void);
-    };
-};
-
 struct cli_context {
     /* 0 if not yet initialized */
     int initialized;
@@ -40,7 +29,7 @@ struct cli_context {
     struct termios unbuffered;
 #endif
     /* Key bindings */
-    struct cli_fsm_state **bindings;
+    struct cli_fsm bindings;
     /* These flags are used to pass state between keystrokes */
     int flags;
     int old_flags;
@@ -65,7 +54,7 @@ struct cli_context {
 /* There can be only one! */
 static struct cli_context cli = { 0 };
 
-cli_key_binding CLI_ANSI_KEY_BINDINGS[] = {
+struct cli_fsm_path CLI_ANSI_KEY_BINDINGS[] = {
     {"\x00", NULL},             /* NUL */
     {"\x01", cli_beginning_of_line},     /* C-a */
     {"\x02", cli_backward_char},   /* C-b */
@@ -120,9 +109,7 @@ static void clear_line(void);
 /* Reprint the current line */
 static void print_line(void);
 /* Handle a character or sequence of such */
-static int handle_character(int ch);
-/* Bind a character sequence to command */
-static int bind_key(const char *seq, int(* func)(void));
+static int handle_character(void);
 /* Copy the current line to the buffer */
 static int pop_line(void);
 /* Push the line currently being edited to the log and create a new one */
@@ -132,7 +119,7 @@ static int kill_forward(const char *str, size_t len);
 /* Add the contents of str to the clipboard */
 static int kill_backward(const char *str, size_t len);
 /* Insert a string where the cursor is */
-static int insert_str(const char *str);
+static int insert_str(const char *str, size_t len);
 /* Insert a character where the cursor is */
 static int insert_char(int c);
 
@@ -240,12 +227,12 @@ static int kill_backward(const char *str, size_t len)
     return 0;
 }
 
-static int insert_str(const char *str)
+static int insert_str(const char *str, size_t len)
 {
     pop_line();
-    cli_buf_insert(&cli.buffer, cli.cursor, str, strlen(str));
+    cli_buf_insert(&cli.buffer, cli.cursor, str, len);
     cli.current = cli.buffer.str;
-    cli.cursor += strlen(str);
+    cli.cursor += len;
     return 0;
 }
 
@@ -258,58 +245,30 @@ static int insert_char(int c)
     return 0;
 }
 
-static int handle_character(int ch)
+static int handle_character(void)
 {
     cli.old_flags = cli.flags;
     cli.flags = 0;
+    unsigned char buf[8];
+    size_t len = 0;
+    int retval;
+    int (*func)(void);
 
-    struct cli_fsm_state **transitions = cli.bindings;
-    struct cli_fsm_state *state = transitions[ch];
-    for (;;) {
-        if (state == NULL) {
-            insert_char(ch);
+    do {
+        buf[len] = keyboard_get();
+        retval = cli_fsm_feed(&cli.bindings, buf[len], (void **)&func);
+        ++len;
+    } while (retval == CLI_FSM_INNER_STATE);
+
+    if (retval == CLI_FSM_FINAL_STATE) {
+        retval = func();
+        if (retval < 0) {
+            putchar(7);
             return 0;
         }
-        if (state->type == CLI_FSM_FINAL_STATE) {
-            int retval = state->func();
-            if (retval < 0) {
-                putchar(7);
-                return 0;
-            }
-            return retval;
-        }
-        ch = keyboard_get();
-        transitions = state->transitions;
-        state = transitions[ch];
+        return retval;
     }
-}
-
-static int bind_key(const char *str, int (*func) (void))
-{
-    struct cli_fsm_state **transitions = cli.bindings;
-    struct cli_fsm_state *next;
-    while (str[1]) {
-        next = transitions[*str];
-        if (next == NULL) {
-            next = malloc(sizeof(*next));
-            next->type = CLI_FSM_INNER_STATE;
-            next->transitions = calloc(256, sizeof(*next->transitions));
-            transitions[*str] = next;
-        } else if (next->type == CLI_FSM_FINAL_STATE) {
-            return -1;
-        }
-        transitions = next->transitions;
-        ++str;
-    }
-    next = transitions[*str];
-    if (next == NULL) {
-        next = malloc(sizeof(*next));
-        next->type = CLI_FSM_FINAL_STATE;
-        transitions[*str] = next;
-    } else if (next->type == CLI_FSM_INNER_STATE) {
-        return -1;
-    }
-    next->func = func;
+    insert_str(buf, len);
     return 0;
 }
 
@@ -325,14 +284,9 @@ int cli_set_history_with_file(size_t max_lines, const char *path)
     return 0;
 }
 
-int cli_set_key_bindings(const cli_key_binding *bindings)
+int cli_set_key_bindings(const struct cli_fsm_path *bindings)
 {
-    cli.bindings = calloc(256, sizeof(struct cli_fsm_state *));
-    while (bindings->seq) {
-        if (bindings->func)
-            bind_key(bindings->seq, bindings->func);
-        ++bindings;
-    }
+    cli_fsm_init(&cli.bindings, bindings);
     return 0;
 }
 
@@ -358,14 +312,12 @@ const char *cli_read(const char *prompt)
     cli.focus = cli.history.size;
     cli.cursor = 0;
 
-    int ch;
     int retval;
 
     do {
         print_line();
-        ch = keyboard_get();
+        retval = handle_character();
         clear_line();
-        retval = handle_character(ch);
     } while (retval == 0);
 
     print_line();
@@ -538,7 +490,7 @@ int cli_backward_kill_word(void)
 int cli_yank(void)
 {
     if (cli.clipboard.len)
-        insert_str(cli.clipboard.str);
+        insert_str(cli.clipboard.str, cli.clipboard.len);
     return 0;
 }
 
@@ -558,7 +510,6 @@ int cli_accept_line(void)
 
 int cli_terminate(void)
 {
-    print_line();
     putchar('\n');
     keyboard_deinit();
     exit(EXIT_FAILURE);
