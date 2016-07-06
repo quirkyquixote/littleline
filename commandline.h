@@ -62,10 +62,10 @@ extern cli_key_binding CLI_ANSI_KEY_BINDINGS[];
 
 /** Set the maximum number of lines in the history */
 int cli_set_history(size_t max_lines);
+/** Set the maximum number of lines in the history */
+int cli_set_history_with_file(size_t max_lines, const char *path);
 /** Reconfigure key bindings */
 int cli_set_key_bindings(const cli_key_binding *bindings);
-/** Set a file to read and write the history */
-int cli_set_history_file(const char *path);
 
 /** Read a line */
 const char *cli_read(const char *prompt);
