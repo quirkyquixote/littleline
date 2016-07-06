@@ -15,7 +15,7 @@
 #include "buffer.h"
 #include "history.h"
 
-struct cli_context {
+struct cl_context {
     /* 0 if not yet initialized */
     int initialized;
     /* User-provided prompt */
@@ -27,11 +27,11 @@ struct cli_context {
     struct termios unbuffered;
 #endif
     /* Key bindings */
-    struct cli_fsm bindings;
+    struct cl_fsm bindings;
     /* Last command executed */
     int (* last_command)(void);
     /* All written lines */
-    struct cli_history history;
+    struct cl_history history;
     /* Index of the line currently being viewed */
     int focus;
     /* Index of the character in line where the cursor currently is */
@@ -41,58 +41,58 @@ struct cli_context {
     /* Current line */
     const char *current;
     /* Buffer for line editing */
-    struct cli_buf buffer;
+    struct cl_buf buffer;
     /* The actual string printed to the screen */
-    struct cli_buf fmt_current;
+    struct cl_buf fmt_current;
     /* A buffer to copy text */
-    struct cli_buf clipboard;
+    struct cl_buf clipboard;
     /* To store executed lines */
     FILE *log_file;
 };
 
 /* There can be only one! */
-static struct cli_context cli = { 0 };
+static struct cl_context cl = { 0 };
 
-struct cli_fsm_path CLI_ANSI_KEY_BINDINGS[] = {
+struct cl_fsm_path CL_ANSI_KEY_BINDINGS[] = {
     {"\x00", NULL},             /* NUL */
-    {"\x01", cli_beginning_of_line},     /* C-a */
-    {"\x02", cli_backward_char},   /* C-b */
-    {"\x03", cli_terminate},/* C-c */
-    {"\x04", cli_end_of_file},  /* C-d */
-    {"\x05", cli_end_of_line},      /* C-e */
-    {"\x06", cli_forward_char},   /* C-f */
+    {"\x01", cl_beginning_of_line},     /* C-a */
+    {"\x02", cl_backward_char},   /* C-b */
+    {"\x03", cl_terminate},/* C-c */
+    {"\x04", cl_end_of_file},  /* C-d */
+    {"\x05", cl_end_of_line},      /* C-e */
+    {"\x06", cl_forward_char},   /* C-f */
     {"\x07", NULL},             /* C-g */
-    {"\x08", cli_backward_delete_char}, /* C-h */
+    {"\x08", cl_backward_delete_char}, /* C-h */
     {"\x09", NULL},             /* C-i */
-    {"\x0A", cli_accept_line},    /* C-j */
-    {"\x0B", cli_forward_kill_line},     /* C-k */
+    {"\x0A", cl_accept_line},    /* C-j */
+    {"\x0B", cl_forward_kill_line},     /* C-k */
     {"\x0C", NULL},             /* C-l */
     {"\x0D", NULL},             /* C-m */
-    {"\x0E", cli_next_history},        /* C-n */
+    {"\x0E", cl_next_history},        /* C-n */
     {"\x0F", NULL},             /* C-o */
-    {"\x10", cli_previous_history},        /* C-p */
+    {"\x10", cl_previous_history},        /* C-p */
     {"\x11", NULL},             /* C-q; possible unbindable */
     {"\x12", NULL},             /* C-r */
     {"\x13", NULL},             /* C-s */
     {"\x14", NULL},             /* C-t */
-    {"\x15", cli_backward_kill_line},   /* C-u */
-    {"\x16", cli_verbatim},      /* C-v */
-    {"\x17", cli_backward_kill_word},        /* C-w */
+    {"\x15", cl_backward_kill_line},   /* C-u */
+    {"\x16", cl_verbatim},      /* C-v */
+    {"\x17", cl_backward_kill_word},        /* C-w */
     {"\x18", NULL},             /* C-x */
-    {"\x19", cli_yank},     /* C-y */
+    {"\x19", cl_yank},     /* C-y */
     {"\x1A", NULL},             /* C-z */
-    {"\x1B" "b", cli_backward_word},    /* M-b */
-    {"\x1B" "f", cli_forward_word},    /* M-f */
+    {"\x1B" "b", cl_backward_word},    /* M-b */
+    {"\x1B" "f", cl_forward_word},    /* M-f */
 
     /* ANSI sequences */
-    {"\x1B[A", cli_previous_history},      /* Up */
-    {"\x1B[B", cli_next_history},      /* Down */
-    {"\x1B[C", cli_forward_char}, /* Right */
-    {"\x1B[D", cli_backward_char}, /* Left */
-    {"\x1B[3~", cli_delete_char},     /* Delete */
-    {"\x1B[7~", cli_beginning_of_line},        /* Home */
-    {"\x1B[8~", cli_end_of_line}, /* End */
-    {"\x7F", cli_backward_delete_char}, /* Backspace */
+    {"\x1B[A", cl_previous_history},      /* Up */
+    {"\x1B[B", cl_next_history},      /* Down */
+    {"\x1B[C", cl_forward_char}, /* Right */
+    {"\x1B[D", cl_backward_char}, /* Left */
+    {"\x1B[3~", cl_delete_char},     /* Delete */
+    {"\x1B[7~", cl_beginning_of_line},        /* Home */
+    {"\x1B[8~", cl_end_of_line}, /* End */
+    {"\x7F", cl_backward_delete_char}, /* Backspace */
 
     {NULL, NULL}
 };
@@ -122,21 +122,21 @@ static int insert_char(int c);
 static int keyboard_init(void)
 {
     /* Disable buffering in stdin. */
-    tcgetattr(0, &cli.buffered);
-    cli.unbuffered = cli.buffered;      /* unbuffered is the same as buffered but */
-    cli.unbuffered.c_lflag &= (~ICANON);    /* disable "canonical" mode */
-    cli.unbuffered.c_lflag &= (~ECHO);      /* don't echo the character */
-    //    cli.unbuffered.c_lflag &= (~ISIG);      /* don't automatically handle ^C */
-    cli.unbuffered.c_cc[VTIME] = 1; /* timeout (tenths of a second) */
-    cli.unbuffered.c_cc[VMIN] = 0;  /* minimum number of characters */
-    tcsetattr(0, TCSANOW, &cli.unbuffered);
+    tcgetattr(0, &cl.buffered);
+    cl.unbuffered = cl.buffered;      /* unbuffered is the same as buffered but */
+    cl.unbuffered.c_lflag &= (~ICANON);    /* disable "canonical" mode */
+    cl.unbuffered.c_lflag &= (~ECHO);      /* don't echo the character */
+    //    cl.unbuffered.c_lflag &= (~ISIG);      /* don't automatically handle ^C */
+    cl.unbuffered.c_cc[VTIME] = 1; /* timeout (tenths of a second) */
+    cl.unbuffered.c_cc[VMIN] = 0;  /* minimum number of characters */
+    tcsetattr(0, TCSANOW, &cl.unbuffered);
     return 0;
 }
 
 static void keyboard_deinit(void)
 {
     /* Restore stdin settings. */
-    tcsetattr(0, TCSANOW, &cli.buffered);
+    tcsetattr(0, TCSANOW, &cl.buffered);
 }
 
 static int keyboard_get(void)
@@ -151,47 +151,47 @@ static int keyboard_get(void)
 
 static void clear_line(void)
 {
-    for (int i = 0; i < cli.fmt_cursor; ++i)
+    for (int i = 0; i < cl.fmt_cursor; ++i)
         putchar('\b');
-    for (int i = 0; i < cli.fmt_current.len; ++i)
+    for (int i = 0; i < cl.fmt_current.len; ++i)
         putchar(' ');
-    for (int i = 0; i < cli.fmt_current.len; ++i)
+    for (int i = 0; i < cl.fmt_current.len; ++i)
         putchar('\b');
 }
 
 static void print_line(void)
 {
-    cli.fmt_cursor = -1;
-    cli_buf_assign(&cli.fmt_current, cli.prompt, strlen(cli.prompt));
-    cli_buf_append_char(&cli.fmt_current, ' ');
-    for (const char *it = cli.current; *it; ++it) {
+    cl.fmt_cursor = -1;
+    cl_buf_assign(&cl.fmt_current, cl.prompt, strlen(cl.prompt));
+    cl_buf_append_char(&cl.fmt_current, ' ');
+    for (const char *it = cl.current; *it; ++it) {
         unsigned char c = *it;
         char buf[8];
         size_t len;
-        if (it - cli.current == cli.cursor)
-            cli.fmt_cursor = cli.fmt_current.len;
+        if (it - cl.current == cl.cursor)
+            cl.fmt_cursor = cl.fmt_current.len;
         if (c < 32)
             len = snprintf(buf, sizeof(buf), "^%c", c + 64);
         else if (isprint(c))
             len = snprintf(buf, sizeof(buf), "%c", c);
         else
             len = snprintf(buf, sizeof(buf), "\\x%02X", c);
-        cli_buf_append(&cli.fmt_current, buf, len);
+        cl_buf_append(&cl.fmt_current, buf, len);
     }
-    fputs(cli.fmt_current.str, stdout);
-    if (cli.fmt_cursor < 0)
-        cli.fmt_cursor = cli.fmt_current.len;
-    for (int i = cli.fmt_current.len; i > cli.fmt_cursor; --i)
+    fputs(cl.fmt_current.str, stdout);
+    if (cl.fmt_cursor < 0)
+        cl.fmt_cursor = cl.fmt_current.len;
+    for (int i = cl.fmt_current.len; i > cl.fmt_cursor; --i)
         putchar('\b');
 }
 
 static int pop_line(void)
 {
-    if (cli.focus != cli.history.size) {
-        const char *str = cli_history_index(&cli.history, cli.focus);
-        cli_buf_assign(&cli.buffer, str, strlen(str));
-        cli.current = cli.buffer.str;
-        cli.focus = cli.history.size;
+    if (cl.focus != cl.history.size) {
+        const char *str = cl_history_index(&cl.history, cl.focus);
+        cl_buf_assign(&cl.buffer, str, strlen(str));
+        cl.current = cl.buffer.str;
+        cl.focus = cl.history.size;
         return 1;
     }
     return 0;
@@ -200,27 +200,27 @@ static int pop_line(void)
 static int push_line(void)
 {
     pop_line();
-    if (cli.log_file)
-        fprintf(cli.log_file, "%s\n", cli.current);
-    cli_history_push(&cli.history, cli.current);
+    if (cl.log_file)
+        fprintf(cl.log_file, "%s\n", cl.current);
+    cl_history_push(&cl.history, cl.current);
     return 0;
 }
 
 static int insert_str(const char *str, size_t len)
 {
     pop_line();
-    cli_buf_insert(&cli.buffer, cli.cursor, str, len);
-    cli.current = cli.buffer.str;
-    cli.cursor += len;
+    cl_buf_insert(&cl.buffer, cl.cursor, str, len);
+    cl.current = cl.buffer.str;
+    cl.cursor += len;
     return 0;
 }
 
 static int insert_char(int c)
 {
     pop_line();
-    cli_buf_insert_char(&cli.buffer, cli.cursor, c);
-    cli.current = cli.buffer.str;
-    ++cli.cursor;
+    cl_buf_insert_char(&cl.buffer, cl.cursor, c);
+    cl.current = cl.buffer.str;
+    ++cl.cursor;
     return 0;
 }
 
@@ -233,13 +233,13 @@ static int handle_character(void)
 
     do {
         buf[len] = keyboard_get();
-        retval = cli_fsm_feed(&cli.bindings, buf[len], (void **)&func);
+        retval = cl_fsm_feed(&cl.bindings, buf[len], (void **)&func);
         ++len;
-    } while (retval == CLI_FSM_INNER_STATE);
+    } while (retval == CL_FSM_INNER_STATE);
 
-    if (retval == CLI_FSM_FINAL_STATE) {
+    if (retval == CL_FSM_FINAL_STATE) {
         retval = func();
-        cli.last_command = func;
+        cl.last_command = func;
         if (retval < 0) {
             putchar(7);
             return 0;
@@ -247,67 +247,67 @@ static int handle_character(void)
         return retval;
     }
     insert_str(buf, len);
-    cli.last_command = NULL;
+    cl.last_command = NULL;
     return 0;
 }
 
-int cli_set_history(size_t max_lines)
+int cl_set_history(size_t max_lines)
 {
-    cli_history_init(&cli.history, max_lines);
+    cl_history_init(&cl.history, max_lines);
     return 0;
 }
 
-int cli_set_history_with_file(size_t max_lines, const char *path)
+int cl_set_history_with_file(size_t max_lines, const char *path)
 {
-    cli_history_init(&cli.history, max_lines);
-    cli.log_file = fopen(path, "a+");
-    if (cli.log_file == NULL) {
+    cl_history_init(&cl.history, max_lines);
+    cl.log_file = fopen(path, "a+");
+    if (cl.log_file == NULL) {
         perror(path);
         return -1;
     }
-    setvbuf(cli.log_file, NULL, _IONBF, 0);
-    fseek(cli.log_file, SEEK_SET, 0);
+    setvbuf(cl.log_file, NULL, _IONBF, 0);
+    fseek(cl.log_file, SEEK_SET, 0);
     int ch;
-    struct cli_buf buf;
-    cli_buf_init(&buf);
-    while ((ch = fgetc(cli.log_file)) != EOF) {
+    struct cl_buf buf;
+    cl_buf_init(&buf);
+    while ((ch = fgetc(cl.log_file)) != EOF) {
         if (ch == '\n') {
-            cli_history_push(&cli.history, buf.str);
-            cli_buf_assign(&buf, "", 0);
+            cl_history_push(&cl.history, buf.str);
+            cl_buf_assign(&buf, "", 0);
         } else {
-            cli_buf_append_char(&buf, ch);
+            cl_buf_append_char(&buf, ch);
         }
     }
-    cli_buf_deinit(&buf);
+    cl_buf_deinit(&buf);
     return 0;
 }
 
-int cli_set_key_bindings(const struct cli_fsm_path *bindings)
+int cl_set_key_bindings(const struct cl_fsm_path *bindings)
 {
-    cli_fsm_init(&cli.bindings, bindings);
+    cl_fsm_init(&cl.bindings, bindings);
     return 0;
 }
 
-const char *cli_read(const char *prompt)
+const char *cl_read(const char *prompt)
 {
-    if (cli.initialized == 0) {
-        cli.initialized = 1;
-        cli.last_command = NULL;
-        cli_buf_init(&cli.buffer);
-        cli_buf_init(&cli.fmt_current);
-        cli_buf_init(&cli.clipboard);
-        cli.current = cli.buffer.str;
-        cli.focus = 0;
-        cli.cursor = 0;
-        cli.fmt_cursor = 0;
+    if (cl.initialized == 0) {
+        cl.initialized = 1;
+        cl.last_command = NULL;
+        cl_buf_init(&cl.buffer);
+        cl_buf_init(&cl.fmt_current);
+        cl_buf_init(&cl.clipboard);
+        cl.current = cl.buffer.str;
+        cl.focus = 0;
+        cl.cursor = 0;
+        cl.fmt_cursor = 0;
         keyboard_init();
     }
 
-    cli_buf_assign(&cli.buffer, "", 0);
-    cli.prompt = prompt;
-    cli.current = cli.buffer.str;
-    cli.focus = cli.history.size;
-    cli.cursor = 0;
+    cl_buf_assign(&cl.buffer, "", 0);
+    cl.prompt = prompt;
+    cl.current = cl.buffer.str;
+    cl.focus = cl.history.size;
+    cl.cursor = 0;
 
     int retval;
 
@@ -322,204 +322,204 @@ const char *cli_read(const char *prompt)
 
     if (retval < 0)
         return NULL;
-    return cli.buffer.str;
+    return cl.buffer.str;
 }
 
-int cli_backward_char(void)
+int cl_backward_char(void)
 {
-    if (cli.cursor == 0)
+    if (cl.cursor == 0)
         return -1;
-    --cli.cursor;
+    --cl.cursor;
     return 0;
 }
 
-int cli_forward_char(void)
+int cl_forward_char(void)
 {
-    if (cli.current[cli.cursor] == 0)
+    if (cl.current[cl.cursor] == 0)
         return -1;
-    ++cli.cursor;
+    ++cl.cursor;
     return 0;
 }
 
-int cli_backward_word(void)
+int cl_backward_word(void)
 {
-    if (cli.cursor == 0)
+    if (cl.cursor == 0)
         return -1;
-    --cli.cursor;
-    while (cli.cursor >= 0 && !isalnum(cli.current[cli.cursor]))
-        --cli.cursor;
-    while (cli.cursor >= 0 && isalnum(cli.current[cli.cursor]))
-        --cli.cursor;
-    ++cli.cursor;
+    --cl.cursor;
+    while (cl.cursor >= 0 && !isalnum(cl.current[cl.cursor]))
+        --cl.cursor;
+    while (cl.cursor >= 0 && isalnum(cl.current[cl.cursor]))
+        --cl.cursor;
+    ++cl.cursor;
     return 0;
 }
 
-int cli_forward_word(void)
+int cl_forward_word(void)
 {
-    if (cli.current[cli.cursor + 1] == 0)
+    if (cl.current[cl.cursor + 1] == 0)
         return -1;
-    while (cli.current[cli.cursor] != 0
-            && !isalnum(cli.current[cli.cursor]))
-        ++cli.cursor;
-    while (cli.current[cli.cursor] != 0
-            && isalnum(cli.current[cli.cursor]))
-        ++cli.cursor;
-    while (cli.current[cli.cursor] != 0
-            && !isalnum(cli.current[cli.cursor]))
-        ++cli.cursor;
+    while (cl.current[cl.cursor] != 0
+            && !isalnum(cl.current[cl.cursor]))
+        ++cl.cursor;
+    while (cl.current[cl.cursor] != 0
+            && isalnum(cl.current[cl.cursor]))
+        ++cl.cursor;
+    while (cl.current[cl.cursor] != 0
+            && !isalnum(cl.current[cl.cursor]))
+        ++cl.cursor;
     return 0;
 }
 
-int cli_beginning_of_line(void)
+int cl_beginning_of_line(void)
 {
-    cli.cursor = 0;
+    cl.cursor = 0;
     return 0;
 }
 
-int cli_end_of_line(void)
+int cl_end_of_line(void)
 {
-    cli.cursor = strlen(cli.current);
+    cl.cursor = strlen(cl.current);
     return 0;
 }
 
-int cli_previous_history(void)
+int cl_previous_history(void)
 {
-    if (cli.focus == 0)
+    if (cl.focus == 0)
         return -1;
-    --cli.focus;
-    cli.current = cli_history_index(&cli.history, cli.focus);
-    cli.cursor = strlen(cli.current);
+    --cl.focus;
+    cl.current = cl_history_index(&cl.history, cl.focus);
+    cl.cursor = strlen(cl.current);
     return 0;
 }
 
-int cli_next_history(void)
+int cl_next_history(void)
 {
-    if (cli.focus == cli.history.size)
+    if (cl.focus == cl.history.size)
         return -1;
-    ++cli.focus;
-    if (cli.focus == cli.history.size)
-        cli.current = cli.buffer.str;
+    ++cl.focus;
+    if (cl.focus == cl.history.size)
+        cl.current = cl.buffer.str;
     else
-        cli.current = cli_history_index(&cli.history, cli.focus);
-    cli.cursor = strlen(cli.current);
+        cl.current = cl_history_index(&cl.history, cl.focus);
+    cl.cursor = strlen(cl.current);
     return 0;
 }
 
-int cli_beginning_of_history(void)
+int cl_beginning_of_history(void)
 {
-    cli.focus = 0;
-    cli.current = cli_history_index(&cli.history, cli.focus);
-    cli.cursor = strlen(cli.current);
+    cl.focus = 0;
+    cl.current = cl_history_index(&cl.history, cl.focus);
+    cl.cursor = strlen(cl.current);
     return 0;
 }
 
-int cli_end_of_history(void)
+int cl_end_of_history(void)
 {
-    cli.focus = cli.history.size;
-    cli.current = cli.buffer.str;
-    cli.cursor = strlen(cli.current);
+    cl.focus = cl.history.size;
+    cl.current = cl.buffer.str;
+    cl.cursor = strlen(cl.current);
     return 0;
 }
 
-int cli_end_of_file(void)
+int cl_end_of_file(void)
 {
-    if (strlen(cli.current) == 0)
-        return cli_terminate();
-    return cli_delete_char();
+    if (strlen(cl.current) == 0)
+        return cl_terminate();
+    return cl_delete_char();
 }
 
-int cli_delete_char(void)
+int cl_delete_char(void)
 {
-    if (cli.current[cli.cursor] == 0)
+    if (cl.current[cl.cursor] == 0)
         return -1;
     pop_line();
-    cli_buf_erase(&cli.buffer, cli.cursor, 1);
-    cli.current = cli.buffer.str;
+    cl_buf_erase(&cl.buffer, cl.cursor, 1);
+    cl.current = cl.buffer.str;
     return 0;
 }
 
-int cli_backward_delete_char(void)
+int cl_backward_delete_char(void)
 {
-    if (cli_backward_char() != 0)
+    if (cl_backward_char() != 0)
         return -1;
-    if (cli_delete_char() != 0)
+    if (cl_delete_char() != 0)
         return -1;
     return 0;
 }
 
-int cli_forward_kill_line(void)
+int cl_forward_kill_line(void)
 {
-    if (cli.current[cli.cursor] == 0)
+    if (cl.current[cl.cursor] == 0)
         return 0;
     pop_line();
-    size_t len = cli.buffer.len - cli.cursor;
-    if (cli.last_command == cli_forward_kill_word)
-        cli_buf_append(&cli.clipboard, cli.buffer.str + cli.cursor, len);
+    size_t len = cl.buffer.len - cl.cursor;
+    if (cl.last_command == cl_forward_kill_word)
+        cl_buf_append(&cl.clipboard, cl.buffer.str + cl.cursor, len);
     else
-        cli_buf_assign(&cli.clipboard, cli.buffer.str + cli.cursor, len);
-    cli_buf_erase(&cli.buffer, cli.cursor, len);
-    cli.current = cli.buffer.str;
+        cl_buf_assign(&cl.clipboard, cl.buffer.str + cl.cursor, len);
+    cl_buf_erase(&cl.buffer, cl.cursor, len);
+    cl.current = cl.buffer.str;
     return 0;
 }
 
-int cli_backward_kill_line(void)
+int cl_backward_kill_line(void)
 {
-    if (cli.cursor == 0)
+    if (cl.cursor == 0)
         return 0;
     pop_line();
-    if (cli.last_command == cli_backward_kill_word)
-        cli_buf_prepend(&cli.clipboard, cli.buffer.str, cli.cursor);
+    if (cl.last_command == cl_backward_kill_word)
+        cl_buf_prepend(&cl.clipboard, cl.buffer.str, cl.cursor);
     else
-        cli_buf_assign(&cli.clipboard, cli.buffer.str, cli.cursor);
-    cli_buf_erase(&cli.buffer, 0, cli.cursor);
-    cli.current = cli.buffer.str;
-    cli.cursor = 0;
+        cl_buf_assign(&cl.clipboard, cl.buffer.str, cl.cursor);
+    cl_buf_erase(&cl.buffer, 0, cl.cursor);
+    cl.current = cl.buffer.str;
+    cl.cursor = 0;
     return 0;
 }
 
-int cli_forward_kill_word(void)
+int cl_forward_kill_word(void)
 {
-    if (cli.current[cli.cursor] == 0)
+    if (cl.current[cl.cursor] == 0)
         return 0;
     pop_line();
-    int begin = cli.cursor;
-    cli_forward_word();
-    size_t len = cli.cursor - begin;
-    if (cli.last_command == cli_forward_kill_word)
-        cli_buf_append(&cli.clipboard, cli.buffer.str + begin, len);
+    int begin = cl.cursor;
+    cl_forward_word();
+    size_t len = cl.cursor - begin;
+    if (cl.last_command == cl_forward_kill_word)
+        cl_buf_append(&cl.clipboard, cl.buffer.str + begin, len);
     else
-        cli_buf_assign(&cli.clipboard, cli.buffer.str + begin, len);
-    cli_buf_erase(&cli.buffer, begin, len);
-    cli.current = cli.buffer.str;
-    cli.cursor = begin;
+        cl_buf_assign(&cl.clipboard, cl.buffer.str + begin, len);
+    cl_buf_erase(&cl.buffer, begin, len);
+    cl.current = cl.buffer.str;
+    cl.cursor = begin;
     return 0;
 }
 
-int cli_backward_kill_word(void)
+int cl_backward_kill_word(void)
 {
-    if (cli.cursor == 0)
+    if (cl.cursor == 0)
         return 0;
     pop_line();
-    int end = cli.cursor;
-    cli_backward_word();
-    size_t len = end - cli.cursor;
-    if (cli.last_command == cli_backward_kill_word)
-        cli_buf_prepend(&cli.clipboard, cli.buffer.str + cli.cursor, len);
+    int end = cl.cursor;
+    cl_backward_word();
+    size_t len = end - cl.cursor;
+    if (cl.last_command == cl_backward_kill_word)
+        cl_buf_prepend(&cl.clipboard, cl.buffer.str + cl.cursor, len);
     else
-        cli_buf_assign(&cli.clipboard, cli.buffer.str + cli.cursor, len);
-    cli_buf_erase(&cli.buffer, cli.cursor, len);
-    cli.current = cli.buffer.str;
+        cl_buf_assign(&cl.clipboard, cl.buffer.str + cl.cursor, len);
+    cl_buf_erase(&cl.buffer, cl.cursor, len);
+    cl.current = cl.buffer.str;
     return 0;
 }
 
-int cli_yank(void)
+int cl_yank(void)
 {
-    if (cli.clipboard.len)
-        insert_str(cli.clipboard.str, cli.clipboard.len);
+    if (cl.clipboard.len)
+        insert_str(cl.clipboard.str, cl.clipboard.len);
     return 0;
 }
 
-int cli_verbatim(void)
+int cl_verbatim(void)
 {
     print_line();
     insert_char(keyboard_get());
@@ -527,13 +527,13 @@ int cli_verbatim(void)
     return 0;
 }
 
-int cli_accept_line(void)
+int cl_accept_line(void)
 {
     push_line();
     return 1;
 }
 
-int cli_terminate(void)
+int cl_terminate(void)
 {
     putchar('\n');
     keyboard_deinit();

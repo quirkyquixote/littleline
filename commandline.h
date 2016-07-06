@@ -54,58 +54,58 @@
 #include "fsm.h"
 
 /** Key bindings for ANSI escape sequences */
-extern struct cli_fsm_path CLI_ANSI_KEY_BINDINGS[];
+extern struct cl_fsm_path CL_ANSI_KEY_BINDINGS[];
 
 /** Set the maximum number of lines in the history */
-int cli_set_history(size_t max_lines);
+int cl_set_history(size_t max_lines);
 /** Set the maximum number of lines in the history */
-int cli_set_history_with_file(size_t max_lines, const char *path);
+int cl_set_history_with_file(size_t max_lines, const char *path);
 /** Reconfigure key bindings */
-int cli_set_key_bindings(const struct cli_fsm_path *bindings);
+int cl_set_key_bindings(const struct cl_fsm_path *bindings);
 
 /** Read a line */
-const char *cli_read(const char *prompt);
+const char *cl_read(const char *prompt);
 
-int cli_backward_char(void);
+int cl_backward_char(void);
 
-int cli_forward_char(void);
+int cl_forward_char(void);
 
-int cli_backward_word(void);
+int cl_backward_word(void);
 
-int cli_forward_word(void);
+int cl_forward_word(void);
 
-int cli_beginning_of_line(void);
+int cl_beginning_of_line(void);
 
-int cli_end_of_line(void);
+int cl_end_of_line(void);
 
-int cli_previous_history(void);
+int cl_previous_history(void);
 
-int cli_next_history(void);
+int cl_next_history(void);
 
-int cli_beginning_of_history(void);
+int cl_beginning_of_history(void);
 
-int cli_end_of_history(void);
+int cl_end_of_history(void);
 
-int cli_end_of_file(void);
+int cl_end_of_file(void);
 
-int cli_delete_char(void);
+int cl_delete_char(void);
 
-int cli_backward_delete_char(void);
+int cl_backward_delete_char(void);
 
-int cli_forward_kill_line(void);
+int cl_forward_kill_line(void);
 
-int cli_backward_kill_line(void);
+int cl_backward_kill_line(void);
 
-int cli_forward_kill_word(void);
+int cl_forward_kill_word(void);
 
-int cli_backward_kill_word(void);
+int cl_backward_kill_word(void);
 
-int cli_yank(void);
+int cl_yank(void);
 
-int cli_verbatim(void);
+int cl_verbatim(void);
 
-int cli_accept_line(void);
+int cl_accept_line(void);
 
-int cli_terminate(void);
+int cl_terminate(void);
 
 #endif // COMMANDLINE_H_

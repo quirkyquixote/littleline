@@ -7,11 +7,11 @@
 
 int main(int arc, char *argv[])
 {
-    cli_set_key_bindings(CLI_ANSI_KEY_BINDINGS);
-    cli_set_history_with_file(10, "history.txt");
+    cl_set_key_bindings(CL_ANSI_KEY_BINDINGS);
+    cl_set_history_with_file(10, "history.txt");
 
     const char *line;
-    while (line = cli_read(">>")) {
+    while (line = cl_read(">>")) {
         if (strlen(line) > 0)
             puts(line);
     }
