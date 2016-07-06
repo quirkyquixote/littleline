@@ -60,17 +60,15 @@ typedef struct _cli_key_binding {
 /** Key bindings for ANSI escape sequences */
 extern cli_key_binding CLI_ANSI_KEY_BINDINGS[];
 
-/** Set custom prompt */
-int cli_set_prompt(const char *prompt);
 /** Set the maximum number of lines in the history */
-int cli_set_history(cli_history *history);
+int cli_set_history(size_t max_lines);
 /** Reconfigure key bindings */
 int cli_set_key_bindings(const cli_key_binding *bindings);
 /** Set a file to read and write the history */
 int cli_set_history_file(const char *path);
 
 /** Read a line */
-const char *cli_read(void);
+const char *cli_read(const char *prompt);
 
 int cli_backward_char(void);
 

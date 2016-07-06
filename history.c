@@ -1,23 +1,20 @@
 
 #include "history.h"
 
-cli_history *cli_history_new(size_t allocated)
+void cli_history_init(struct cli_history *hist, size_t allocated)
 {
-    cli_history *hist = malloc(sizeof(*hist));
     hist->data = calloc(allocated, sizeof(*hist->data));
     hist->allocated = allocated;
     hist->size = 0;
     hist->end = 0;
-    return hist;
 }
 
-void cli_history_free(cli_history *hist)
+void cli_history_free(struct cli_history *hist)
 {
     free(hist->data);
-    free(hist);
 }
 
-void cli_history_push(cli_history *hist, const char *line)
+void cli_history_push(struct cli_history *hist, const char *line)
 {
     if (hist->size > 0 && strcmp(cli_history_index(hist, hist->size - 1), line) == 0)
         return;
@@ -31,7 +28,7 @@ void cli_history_push(cli_history *hist, const char *line)
         hist->end = 0;
 }
 
-const char *cli_history_index(cli_history *hist, size_t index)
+const char *cli_history_index(struct cli_history *hist, size_t index)
 {
     if (hist->size < hist->allocated)
         return hist->data[index];
