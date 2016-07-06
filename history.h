@@ -4,20 +4,15 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 struct cli_history {
     char **data;
     size_t allocated;
     size_t size;
     size_t end;
-    FILE *file;
 };
 
 void cli_history_init(struct cli_history *hist, size_t max_lines);
-
-int cli_history_init_with_file(struct cli_history *hist, size_t max_lines,
-                               const char *path);
 
 void cli_history_deinit(struct cli_history *hist);
 

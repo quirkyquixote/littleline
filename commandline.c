@@ -49,6 +49,8 @@ struct cli_context {
     struct cli_buf fmt_current;
     /* A buffer to copy text */
     struct cli_buf clipboard;
+    /* To store executed lines */
+    FILE *log_file;
 };
 
 /* There can be only one! */
@@ -205,6 +207,8 @@ static int pop_line(void)
 static int push_line(void)
 {
     pop_line();
+    if (cli.log_file)
+        fprintf(cli.log_file, "%s\n", cli.current);
     cli_history_push(&cli.history, cli.current);
     return 0;
 }
@@ -280,7 +284,26 @@ int cli_set_history(size_t max_lines)
 
 int cli_set_history_with_file(size_t max_lines, const char *path)
 {
-    cli_history_init_with_file(&cli.history, max_lines, path);
+    cli_history_init(&cli.history, max_lines);
+    cli.log_file = fopen(path, "a+");
+    if (cli.log_file == NULL) {
+        perror(path);
+        return -1;
+    }
+    setvbuf(cli.log_file, NULL, _IONBF, 0);
+    fseek(cli.log_file, SEEK_SET, 0);
+    int ch;
+    struct cli_buf buf;
+    cli_buf_init(&buf);
+    while ((ch = fgetc(cli.log_file)) != EOF) {
+        if (ch == '\n') {
+            cli_history_push(&cli.history, buf.str);
+            cli_buf_assign(&buf, "", 0);
+        } else {
+            cli_buf_append_char(&buf, ch);
+        }
+    }
+    cli_buf_deinit(&buf);
     return 0;
 }
 
