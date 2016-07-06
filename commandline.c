@@ -544,7 +544,7 @@ int cli_forward_kill_line(void)
     pop_line(cli);
     size_t len = cli->buffer->len - cli->cursor;
     kill_forward(cli, cli->buffer->str + cli->cursor, len);
-    cli_buf_erase(cli->buffer, cli->cursor, cli->buffer->len);
+    cli_buf_erase(cli->buffer, cli->cursor, cli->buffer->len - cli->cursor);
     cli->current = cli->buffer->str;
     return 0;
 }
