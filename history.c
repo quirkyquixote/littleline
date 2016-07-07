@@ -20,8 +20,12 @@ void cl_history_deinit(struct cl_history *hist)
 
 void cl_history_push(struct cl_history *hist, const char *line)
 {
-    if (hist->size > 0
-         && strcmp(cl_history_index(hist, hist->size - 1), line) == 0)
+    const char *ptr;
+
+    for (ptr = line; *ptr && isspace(*ptr); ++ptr)
+        continue;
+    if ((strlen(ptr) == 0) || ((hist->size > 0)
+         && (strcmp(cl_history_index(hist, hist->size - 1), line) == 0)))
         return;
     if (hist->size == hist->allocated)
         free(hist->data[hist->end]);
