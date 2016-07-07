@@ -10,8 +10,7 @@ void cl_buf_init(struct cl_buf *buf)
 
 void cl_buf_deinit(struct cl_buf *buf)
 {
-    if (buf->str)
-        free(buf->str);
+    free(buf->str);
 }
 
 void cl_buf_grow(struct cl_buf *buf, size_t len)
@@ -33,12 +32,9 @@ void cl_buf_assign(struct cl_buf *buf, const void *str, size_t len)
 
 void cl_buf_insert(struct cl_buf *buf, size_t where, const void *str, size_t len)
 {
-    assert(buf->str);
     assert(where <= buf->len);
     cl_buf_grow(buf, buf->len + len + 1);
-    memmove(buf->str + (where + len),
-            buf->str + where,
-            buf->len - where + 1);
+    memmove(buf->str + (where + len), buf->str + where, buf->len - where + 1);
     memcpy(buf->str + where, str, len);
     buf->len += len;
 }
@@ -55,18 +51,14 @@ void cl_buf_prepend(struct cl_buf *buf, const void *str, size_t len)
 
 void cl_buf_replace(struct cl_buf *buf, size_t where, const void *str, size_t len)
 {
-    assert(buf->str);
     assert(where + len <= buf->len);
     memcpy(buf->str + where, str, len);
 }
 
 void cl_buf_erase(struct cl_buf *buf, size_t where, size_t len)
 {
-    assert(buf->str);
     assert(where + len <= buf->len);
-    memmove(buf->str + where,
-            buf->str + (where + len),
-            buf->len - where + len + 1);
+    memmove(buf->str + where, buf->str + (where + len), buf->len - where + len + 1);
     buf->len -= len;
 }
 
