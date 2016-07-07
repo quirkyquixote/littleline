@@ -47,7 +47,7 @@ static int bind_path(struct ll_fsm_state **trans, const char *str,
     }
 }
 
-int ll_fsm_feed(struct ll_fsm *fsm, int token, int(**func)(void))
+int ll_fsm_feed(struct ll_fsm *fsm, unsigned char token, int(**func)(void))
 {
     struct ll_fsm_state *next = fsm->cur[token];
     if (next == NULL) {

@@ -46,7 +46,7 @@ void ll_fsm_deinit(struct ll_fsm *fsm);
  * final, return its data through the reference; if the state was not
  * intermediate, reset the internal pointer to the initial state transition
  * table so the next call will start from scratch */
-int ll_fsm_feed(struct ll_fsm *fsm, int token, int(**func)(void));
+int ll_fsm_feed(struct ll_fsm *fsm, unsigned char token, int(**func)(void));
 
 #endif
 
