@@ -54,33 +54,21 @@ struct cl_context {
 static struct cl_context cl = { 0 };
 
 struct cl_fsm_path CL_ANSI_KEY_BINDINGS[] = {
-    {"\x00", NULL},             /* NUL */
     {"\x01", cl_beginning_of_line},     /* C-a */
     {"\x02", cl_backward_char},   /* C-b */
     {"\x03", cl_terminate},/* C-c */
     {"\x04", cl_end_of_file},  /* C-d */
     {"\x05", cl_end_of_line},      /* C-e */
     {"\x06", cl_forward_char},   /* C-f */
-    {"\x07", NULL},             /* C-g */
     {"\x08", cl_backward_delete_char}, /* C-h */
-    {"\x09", NULL},             /* C-i */
     {"\x0A", cl_accept_line},    /* C-j */
     {"\x0B", cl_forward_kill_line},     /* C-k */
-    {"\x0C", NULL},             /* C-l */
-    {"\x0D", NULL},             /* C-m */
     {"\x0E", cl_next_history},        /* C-n */
-    {"\x0F", NULL},             /* C-o */
     {"\x10", cl_previous_history},        /* C-p */
-    {"\x11", NULL},             /* C-q; possible unbindable */
-    {"\x12", NULL},             /* C-r */
-    {"\x13", NULL},             /* C-s */
-    {"\x14", NULL},             /* C-t */
     {"\x15", cl_backward_kill_line},   /* C-u */
     {"\x16", cl_verbatim},      /* C-v */
     {"\x17", cl_backward_kill_word},        /* C-w */
-    {"\x18", NULL},             /* C-x */
     {"\x19", cl_yank},     /* C-y */
-    {"\x1A", NULL},             /* C-z */
     {"\x1B" "b", cl_backward_word},    /* M-b */
     {"\x1B" "f", cl_forward_word},    /* M-f */
 
@@ -94,7 +82,7 @@ struct cl_fsm_path CL_ANSI_KEY_BINDINGS[] = {
     {"\x1B[8~", cl_end_of_line}, /* End */
     {"\x7F", cl_backward_delete_char}, /* Backspace */
 
-    {NULL, NULL}
+    {NULL}
 };
 
 /* Setup keyboard */
@@ -123,12 +111,18 @@ static int keyboard_init(void)
 {
     /* Disable buffering in stdin. */
     tcgetattr(0, &cl.buffered);
-    cl.unbuffered = cl.buffered;      /* unbuffered is the same as buffered but */
-    cl.unbuffered.c_lflag &= (~ICANON);    /* disable "canonical" mode */
-    cl.unbuffered.c_lflag &= (~ECHO);      /* don't echo the character */
-    //    cl.unbuffered.c_lflag &= (~ISIG);      /* don't automatically handle ^C */
-    cl.unbuffered.c_cc[VTIME] = 1; /* timeout (tenths of a second) */
-    cl.unbuffered.c_cc[VMIN] = 0;  /* minimum number of characters */
+    /* unbuffered is the same as buffered but */
+    cl.unbuffered = cl.buffered;
+    /* disable "canonical" mode */
+    cl.unbuffered.c_lflag &= (~ICANON);
+    /* don't echo the character */
+    cl.unbuffered.c_lflag &= (~ECHO);
+    /* don't automatically handle ^C */
+    /*cl.unbuffered.c_lflag &= (~ISIG);*/
+    /* timeout (tenths of a second) */
+    cl.unbuffered.c_cc[VTIME] = 1;
+    /* minimum number of characters */
+    cl.unbuffered.c_cc[VMIN] = 0;
     tcsetattr(0, TCSANOW, &cl.unbuffered);
     return 0;
 }
@@ -151,23 +145,28 @@ static int keyboard_get(void)
 
 static void clear_line(void)
 {
-    for (int i = 0; i < cl.fmt_cursor; ++i)
+    int i;
+    for (i = 0; i < cl.fmt_cursor; ++i)
         putchar('\b');
-    for (int i = 0; i < cl.fmt_current.len; ++i)
+    for (i = 0; i < cl.fmt_current.len; ++i)
         putchar(' ');
-    for (int i = 0; i < cl.fmt_current.len; ++i)
+    for (i = 0; i < cl.fmt_current.len; ++i)
         putchar('\b');
 }
 
 static void print_line(void)
 {
+    const char *it;
+    unsigned char c;
+    char buf[8];
+    size_t len;
+    int i;
+
     cl.fmt_cursor = -1;
     cl_buf_assign(&cl.fmt_current, cl.prompt, strlen(cl.prompt));
     cl_buf_append_char(&cl.fmt_current, ' ');
-    for (const char *it = cl.current; *it; ++it) {
-        unsigned char c = *it;
-        char buf[8];
-        size_t len;
+    for (it = cl.current; *it; ++it) {
+        c = *it;
         if (it - cl.current == cl.cursor)
             cl.fmt_cursor = cl.fmt_current.len;
         if (c < 32)
@@ -181,7 +180,7 @@ static void print_line(void)
     fputs(cl.fmt_current.str, stdout);
     if (cl.fmt_cursor < 0)
         cl.fmt_cursor = cl.fmt_current.len;
-    for (int i = cl.fmt_current.len; i > cl.fmt_cursor; --i)
+    for (i = cl.fmt_current.len; i > cl.fmt_cursor; --i)
         putchar('\b');
 }
 
@@ -226,14 +225,14 @@ static int insert_char(int c)
 
 static int handle_character(void)
 {
-    unsigned char buf[8];
+    char buf[8];
     size_t len = 0;
     int retval;
     int (*func)(void);
 
     do {
         buf[len] = keyboard_get();
-        retval = cl_fsm_feed(&cl.bindings, buf[len], (void **)&func);
+        retval = cl_fsm_feed(&cl.bindings, buf[len], &func);
         ++len;
     } while (retval == CL_FSM_INNER_STATE);
 
@@ -259,6 +258,9 @@ int cl_set_history(size_t max_lines)
 
 int cl_set_history_with_file(size_t max_lines, const char *path)
 {
+    int ch;
+    struct cl_buf buf;
+
     cl_history_init(&cl.history, max_lines);
     cl.log_file = fopen(path, "a+");
     if (cl.log_file == NULL) {
@@ -267,8 +269,6 @@ int cl_set_history_with_file(size_t max_lines, const char *path)
     }
     setvbuf(cl.log_file, NULL, _IONBF, 0);
     fseek(cl.log_file, SEEK_SET, 0);
-    int ch;
-    struct cl_buf buf;
     cl_buf_init(&buf);
     while ((ch = fgetc(cl.log_file)) != EOF) {
         if (ch == '\n') {
@@ -290,6 +290,8 @@ int cl_set_key_bindings(const struct cl_fsm_path *bindings)
 
 const char *cl_read(const char *prompt)
 {
+    int retval;
+
     if (cl.initialized == 0) {
         cl.initialized = 1;
         cl.last_command = NULL;
@@ -308,8 +310,6 @@ const char *cl_read(const char *prompt)
     cl.current = cl.buffer.str;
     cl.focus = cl.history.size;
     cl.cursor = 0;
-
-    int retval;
 
     do {
         print_line();
@@ -449,10 +449,12 @@ int cl_backward_delete_char(void)
 
 int cl_forward_kill_line(void)
 {
+    size_t len;
+
     if (cl.current[cl.cursor] == 0)
         return 0;
     pop_line();
-    size_t len = cl.buffer.len - cl.cursor;
+    len = cl.buffer.len - cl.cursor;
     if (cl.last_command == cl_forward_kill_word)
         cl_buf_append(&cl.clipboard, cl.buffer.str + cl.cursor, len);
     else
@@ -479,12 +481,15 @@ int cl_backward_kill_line(void)
 
 int cl_forward_kill_word(void)
 {
+    size_t begin;
+    size_t len;
+
     if (cl.current[cl.cursor] == 0)
         return 0;
     pop_line();
-    int begin = cl.cursor;
+    begin = cl.cursor;
     cl_forward_word();
-    size_t len = cl.cursor - begin;
+    len = cl.cursor - begin;
     if (cl.last_command == cl_forward_kill_word)
         cl_buf_append(&cl.clipboard, cl.buffer.str + begin, len);
     else
@@ -497,12 +502,15 @@ int cl_forward_kill_word(void)
 
 int cl_backward_kill_word(void)
 {
+    size_t end;
+    size_t len;
+
     if (cl.cursor == 0)
         return 0;
     pop_line();
-    int end = cl.cursor;
+    end = cl.cursor;
     cl_backward_word();
-    size_t len = end - cl.cursor;
+    len = end - cl.cursor;
     if (cl.last_command == cl_backward_kill_word)
         cl_buf_prepend(&cl.clipboard, cl.buffer.str + cl.cursor, len);
     else

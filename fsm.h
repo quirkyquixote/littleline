@@ -17,8 +17,8 @@ struct cl_fsm_state {
         /* For intermediate states, a table with all possible transitions */
         struct cl_fsm_state **trans;
         /* For final states data that determines what it actually is */
-        void *data;
-    };
+        int(*func)(void);
+    } data;
 };
 
 /* A finite state machine */
@@ -32,9 +32,9 @@ struct cl_fsm {
 /* Auxiliary data for building finite state machines */
 struct cl_fsm_path {
     /* A string to be recognized */
-    const unsigned char *str;
+    const char *str;
     /* Data that identifies the final state */
-    void *data;
+    int(*func)(void);
 };
 
 /* Initialize */
@@ -46,7 +46,7 @@ void cl_fsm_deinit(struct cl_fsm *fsm);
  * final, return its data through the reference; if the state was not
  * intermediate, reset the internal pointer to the initial state transition
  * table so the next call will start from scratch */
-int cl_fsm_feed(struct cl_fsm *fsm, int token, void **data);
+int cl_fsm_feed(struct cl_fsm *fsm, int token, int(**func)(void));
 
-#endif // COMMANDLINE_FSM_H_
+#endif
 

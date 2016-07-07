@@ -28,4 +28,4 @@ void cl_history_push(struct cl_history *hist, const char *line);
  * stored in the list. */
 const char *cl_history_index(struct cl_history *hist, size_t index);
 
-#endif // COMMANDLINE_HISTORY_H_
+#endif

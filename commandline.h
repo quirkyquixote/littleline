@@ -72,4 +72,4 @@ int cl_accept_line(void);
 /* Terminate the process */
 int cl_terminate(void);
 
-#endif // COMMANDLINE_H_
+#endif

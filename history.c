@@ -1,6 +1,8 @@
 
 #include "history.h"
 
+#include <string.h>
+
 #include "buffer.h"
 
 void cl_history_init(struct cl_history *hist, size_t allocated)
@@ -25,7 +27,8 @@ void cl_history_push(struct cl_history *hist, const char *line)
         free(hist->data[hist->end]);
     else
         ++hist->size;
-    hist->data[hist->end] = strdup(line);
+    hist->data[hist->end] = malloc(strlen(line) + 1);
+    strcpy(hist->data[hist->end], line);
     ++hist->end;
     if (hist->end == hist->allocated)
         hist->end = 0;

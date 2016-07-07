@@ -13,7 +13,7 @@
 /* A helpter to build text strings */
 struct cl_buf {
     /* The string being built */
-    unsigned char *str;
+    char *str;
     /* Number of bytes currently allocated */
     size_t allocated;
     /* Number of bytes currently used */
@@ -47,5 +47,5 @@ void cl_buf_replace_char(struct cl_buf *buf, size_t where, char c);
 /* Same as erase(buf, where, 1) */
 void cl_buf_erase_char(struct cl_buf *buf, size_t where);
 
-#endif // COMMANDLINE_BUFFER_H_
+#endif
 
