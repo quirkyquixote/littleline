@@ -18,8 +18,6 @@
 struct cl_context {
     /* 0 if not yet initialized */
     int initialized;
-    /* User-provided prompt */
-    const char *prompt;
 #if (defined(__unix__) || defined(unix))
     /* Keep here a copy of the original state of the terminal */
     struct termios buffered;
@@ -163,8 +161,7 @@ static void print_line(void)
     int i;
 
     cl.fmt_cursor = -1;
-    cl_buf_assign(&cl.fmt_current, cl.prompt, strlen(cl.prompt));
-    cl_buf_append_char(&cl.fmt_current, ' ');
+    cl_buf_assign(&cl.fmt_current, "", 0);
     for (it = cl.current; *it; ++it) {
         c = *it;
         if (it - cl.current == cl.cursor)
@@ -306,10 +303,11 @@ const char *cl_read(const char *prompt)
     }
 
     cl_buf_assign(&cl.buffer, "", 0);
-    cl.prompt = prompt;
     cl.current = cl.buffer.str;
     cl.focus = cl.history.size;
     cl.cursor = 0;
+
+    printf("%s ", prompt);
 
     do {
         print_line();
