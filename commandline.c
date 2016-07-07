@@ -183,9 +183,8 @@ static void print_line(void)
 
 static int pop_line(void)
 {
-    if (cl.focus != cl.history.size) {
-        const char *str = cl_history_index(&cl.history, cl.focus);
-        cl_buf_assign(&cl.buffer, str, strlen(str));
+    if (cl.current != cl.buffer.str) {
+        cl_buf_assign(&cl.buffer, cl.current, strlen(cl.current));
         cl.current = cl.buffer.str;
         cl.focus = cl.history.size;
         return 1;
@@ -195,7 +194,6 @@ static int pop_line(void)
 
 static int push_line(void)
 {
-    pop_line();
     if (cl.log_file)
         fprintf(cl.log_file, "%s\n", cl.current);
     cl_history_push(&cl.history, cl.current);
