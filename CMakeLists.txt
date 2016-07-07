@@ -1,9 +1,9 @@
-# Root CMake script for the COMMANDLINE project
+# Root CMake script for the LITTLELINE project
 #
 # Apr 2013 - Created by Luis Sanz
 
 cmake_minimum_required (VERSION 2.6)
-project (COMMANDLINE C)
+project (LITTLELINE C)
 
 # Flags for the C compiler allow more flags to be defined
 # TODO: allow flags to be overriden
@@ -33,6 +33,6 @@ enable_testing()
 
 # The rest is in subdirectories
 #
-add_library(commandline commandline.c history.c buffer.c fsm.c)
-add_executable(cltest test.c)
-target_link_libraries(cltest commandline)
+add_library(littleline littleline.c history.c buffer.c fsm.c)
+add_subdirectory(tests)
+add_subdirectory(examples)

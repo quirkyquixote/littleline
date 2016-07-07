@@ -1,12 +1,12 @@
 
-#ifndef COMMANDLINE_HISTORY_H_
-#define COMMANDLINE_HISTORY_H_
+#ifndef LITTLELINE_HISTORY_H_
+#define LITTLELINE_HISTORY_H_
 
 #include <string.h>
 #include <stdlib.h>
 
 /* Fixed-size circular list to store text strings */
-struct cl_history {
+struct ll_history {
     /* All strings stored here */
     char **data;
     /* Total capacity */
@@ -18,14 +18,14 @@ struct cl_history {
 };
 
 /* Initialize */
-void cl_history_init(struct cl_history *hist, size_t max_lines);
+void ll_history_init(struct ll_history *hist, size_t max_lines);
 /* Deinitialize */
-void cl_history_deinit(struct cl_history *hist);
+void ll_history_deinit(struct ll_history *hist);
 /* Push a copy of line into the list; if size reaches allocated, it will push
  * out the oldest stored string. */
-void cl_history_push(struct cl_history *hist, const char *line);
+void ll_history_push(struct ll_history *hist, const char *line);
 /* Return the string whose index is given, counting from the oldest one still
  * stored in the list. */
-const char *cl_history_index(struct cl_history *hist, size_t index);
+const char *ll_history_index(struct ll_history *hist, size_t index);
 
 #endif

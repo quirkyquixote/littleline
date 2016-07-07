@@ -1,8 +1,8 @@
-CommandLine - a Poor Man's ReadLine
-===================================
+LittleLine - a Poor Person's ReadLine
+=====================================
 
-This library is a poor's man clone of the GNU realine library, originally coded
-because I needed it in a context where I wasn't allowed to GPL.
+This library is a poor person's clone of the GNU realine library, originally
+coded because I needed it in a context where I wasn't allowed to GPL.
 
 It doesn't implement everything readline does: doesn't have undo functionality
 and instead of a kill ring, there is a single string clipboard.
