@@ -34,14 +34,16 @@ struct ll_context {
     int focus;
     /* Index of the character in line where the cursor currently is */
     int cursor;
-    /* Index of the character in fmt_current where the cursor currently is */
+    /* Index of the character in the printed line where the cursor currently
+     * is; this may be different from cursor if there are non-printable
+     * characters in the buffer */
     int fmt_cursor;
+    /* Number of actual characters currently printed in the line */
+    int fmt_len;
     /* Current line */
     const char *current;
     /* Buffer for line editing */
     struct ll_buf buffer;
-    /* The actual string printed to the screen */
-    struct ll_buf fmt_current;
     /* A buffer to copy text */
     struct ll_buf clipboard;
     /* To store executed lines */
@@ -89,10 +91,8 @@ static int keyboard_init(void);
 static void keyboard_deinit(void);
 /* Get next character */
 static int keyboard_get(void);
-/* Erase the current line */
-static void clear_line(void);
 /* Reprint the current line */
-static void print_line(void);
+static void reprint_line(void);
 /* Handle a character or sequence of such */
 static int handle_character(void);
 /* Copy the current line to the buffer */
@@ -141,44 +141,49 @@ static int keyboard_get(void)
 }
 #endif
 
-static void clear_line(void)
+static void reprint_line(void)
 {
-    int i;
-    for (i = 0; i < cl.fmt_cursor; ++i)
-        putchar('\b');
-    for (i = 0; i < cl.fmt_current.len; ++i)
-        putchar(' ');
-    for (i = 0; i < cl.fmt_current.len; ++i)
-        putchar('\b');
-}
-
-static void print_line(void)
-{
+    size_t old_fmt_len;
     const char *it;
     unsigned char c;
-    char buf[8];
-    size_t len;
     int i;
 
+    /* We'll need this later */
+    old_fmt_len = cl.fmt_len;
+    /* Move the cursor to the beginning of the line */
+    for (i = 0; i < cl.fmt_cursor; ++i)
+        putchar('\b');
+    /* Rebuild the formatted string */
     cl.fmt_cursor = -1;
-    ll_buf_assign(&cl.fmt_current, "", 0);
+    cl.fmt_len = 0;
     for (it = cl.current; *it; ++it) {
         c = *it;
         if (it - cl.current == cl.cursor)
-            cl.fmt_cursor = cl.fmt_current.len;
+            cl.fmt_cursor = cl.fmt_len;
         if (c < 32)
-            len = snprintf(buf, sizeof(buf), "^%c", c + 64);
+            cl.fmt_len += printf("^%c", c + 64);
         else if (isprint(c))
-            len = snprintf(buf, sizeof(buf), "%c", c);
+            cl.fmt_len += printf("%c", c);
         else
-            len = snprintf(buf, sizeof(buf), "\\x%02X", c);
-        ll_buf_append(&cl.fmt_current, buf, len);
+            cl.fmt_len += printf("\\x%02X", c);
     }
-    fputs(cl.fmt_current.str, stdout);
+    /* If the cursor index is still -1, that means it is actually after the end
+     * of the formatted line */
     if (cl.fmt_cursor < 0)
-        cl.fmt_cursor = cl.fmt_current.len;
-    for (i = cl.fmt_current.len; i > cl.fmt_cursor; --i)
+        cl.fmt_cursor = cl.fmt_len;
+    /* If the old fmt_len was greater than the current, that means we have
+     * deleted some characters: overwrite them with spaces */
+    i = cl.fmt_len;
+    while (i < old_fmt_len) {
+        putchar(' ');
+        ++i;
+    }
+    /* Move back the cursor from the end of the printed line to the actual
+     * cursor position */
+    while (i > cl.fmt_cursor) {
         putchar('\b');
+        --i;
+    }
 }
 
 static int pop_line(void)
@@ -291,29 +296,25 @@ const char *ll_read(const char *prompt)
         cl.initialized = 1;
         cl.last_command = NULL;
         ll_buf_init(&cl.buffer);
-        ll_buf_init(&cl.fmt_current);
         ll_buf_init(&cl.clipboard);
-        cl.current = cl.buffer.str;
-        cl.focus = 0;
-        cl.cursor = 0;
-        cl.fmt_cursor = 0;
         keyboard_init();
     }
 
     ll_buf_assign(&cl.buffer, "", 0);
+    cl.fmt_len = 0;
     cl.current = cl.buffer.str;
     cl.focus = cl.history.size;
     cl.cursor = 0;
+    cl.fmt_cursor = 0;
 
     printf("%s ", prompt);
 
     do {
-        print_line();
+        reprint_line();
         retval = handle_character();
-        clear_line();
     } while (retval == 0);
 
-    print_line();
+    reprint_line();
     putchar('\n');
 
     if (retval < 0)
@@ -525,9 +526,8 @@ int ll_yank(void)
 
 int ll_verbatim(void)
 {
-    print_line();
+    reprint_line();
     insert_char(keyboard_get());
-    clear_line();
     return 0;
 }
 
