@@ -533,6 +533,7 @@ int ll_verbatim(void)
 
 int ll_accept_line(void)
 {
+    pop_line();
     push_line();
     return 1;
 }
