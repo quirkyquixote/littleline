@@ -30,6 +30,8 @@ struct ll_context {
     int (* last_command)(void);
     /* All written lines */
     struct ll_history history;
+    /* To store executed lines */
+    const char *history_file;
     /* Index of the line currently being viewed */
     int focus;
     /* Index of the character in line where the cursor currently is */
@@ -46,8 +48,6 @@ struct ll_context {
     struct ll_buf buffer;
     /* A buffer to copy text */
     struct ll_buf clipboard;
-    /* To store executed lines */
-    FILE *log_file;
 };
 
 /* There can be only one! */
@@ -199,9 +199,9 @@ static int pop_line(void)
 
 static int push_line(void)
 {
-    if (cl.log_file)
-        fprintf(cl.log_file, "%s\n", cl.current);
     ll_history_push(&cl.history, cl.current);
+    if (cl.history_file)
+        ll_history_write(&cl.history, cl.history_file);
     return 0;
 }
 
@@ -253,33 +253,15 @@ static int handle_character(void)
 int ll_set_history(size_t max_lines)
 {
     ll_history_init(&cl.history, max_lines);
+    cl.history_file = NULL;
     return 0;
 }
 
 int ll_set_history_with_file(size_t max_lines, const char *path)
 {
-    int ch;
-    struct ll_buf buf;
-
     ll_history_init(&cl.history, max_lines);
-    cl.log_file = fopen(path, "a+");
-    if (cl.log_file == NULL) {
-        perror(path);
-        return -1;
-    }
-    setvbuf(cl.log_file, NULL, _IONBF, 0);
-    fseek(cl.log_file, SEEK_SET, 0);
-    ll_buf_init(&buf);
-    while ((ch = fgetc(cl.log_file)) != EOF) {
-        if (ch == '\n') {
-            ll_history_push(&cl.history, buf.str);
-            ll_buf_assign(&buf, "", 0);
-        } else {
-            ll_buf_append_char(&buf, ch);
-        }
-    }
-    ll_buf_deinit(&buf);
-    return 0;
+    cl.history_file = path;
+    return ll_history_read(&cl.history, path);
 }
 
 int ll_set_key_bindings(const struct ll_fsm_path *bindings)
