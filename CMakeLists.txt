@@ -34,7 +34,7 @@ enable_testing()
 # The rest is in subdirectories
 #
 add_library(littleline SHARED
-    littleline.c history.c buffer.c fsm.c)
+    littleline.c history.c buffer.c binding.c)
 install(TARGETS littleline DESTINATION lib)
 add_subdirectory(tests)
 add_subdirectory(examples)

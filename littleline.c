@@ -53,7 +53,7 @@ struct ll_context {
 /* There can be only one! */
 static struct ll_context cl = { 0 };
 
-struct ll_fsm_path LL_ANSI_KEY_BINDINGS[] = {
+struct ll_binding LL_ANSI_KEY_BINDINGS[] = {
     {"\x01", ll_beginning_of_line},     /* C-a */
     {"\x02", ll_backward_char},   /* C-b */
     {"\x03", ll_terminate},/* C-c */
@@ -264,7 +264,7 @@ int ll_set_history_with_file(size_t max_lines, const char *path)
     return ll_history_read(&cl.history, path);
 }
 
-int ll_set_key_bindings(const struct ll_fsm_path *bindings)
+int ll_set_key_bindings(const struct ll_binding *bindings)
 {
     ll_fsm_init(&cl.bindings, bindings);
     return 0;

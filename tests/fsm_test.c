@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../fsm.h"
+#include "../binding.h"
 
 int six_zeroes(void)
 {
@@ -14,7 +14,7 @@ int four_ones(void)
     return 0;
 }
 
-static const struct ll_fsm_path paths[] = {
+static const struct ll_binding paths[] = {
     { "000000", six_zeroes },
     { "1111", four_ones },
     { NULL }

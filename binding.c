@@ -1,12 +1,12 @@
 
-#include "fsm.h"
+#include "binding.h"
 
 #include <stdlib.h>
 
 static int bind_path(struct ll_fsm_state **trans, const char *str,
         int(*func)(void));
 
-void ll_fsm_init(struct ll_fsm *fsm, const struct ll_fsm_path *paths)
+void ll_fsm_init(struct ll_fsm *fsm, const struct ll_binding *paths)
 {
     fsm->initial = calloc(256, sizeof(*fsm->initial));
     while (paths->str) {

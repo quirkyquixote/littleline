@@ -1,7 +1,7 @@
 LittleLine - a Poor Person's ReadLine
 =====================================
 
-This library is a poor person's clone of the GNU realine library, originally
+This library is a poor person's clone of the GNU readline library, originally
 coded because I needed it in a context where I wasn't allowed to GPL.
 
 It doesn't implement everything readline does: doesn't have undo functionality
