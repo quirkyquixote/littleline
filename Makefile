@@ -46,7 +46,7 @@ clean-test:
 	@make -C tests $@
 
 .PHONY: realclean
-realclean: clean clean-test
+realclean: clean clean-test clean-examples
 
 liblittleline.so: $(LITTLELINE_OBJECTS)
 	$(call colorecho,Linking C shared library $@)
