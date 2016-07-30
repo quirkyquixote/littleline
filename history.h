@@ -10,14 +10,14 @@
  * @ingroup LittleLine
  */
 struct ll_history {
-    /** All strings stored here */
-    char **data;
-    /** Total capacity */
-    size_t allocated;
-    /** Number of strings currently held */
-    size_t size;
-    /** Index of the element after the last one */
-    size_t end;
+	/** All strings stored here */
+	char **data;
+	/** Total capacity */
+	size_t allocated;
+	/** Number of strings currently held */
+	size_t size;
+	/** Index of the element after the last one */
+	size_t end;
 };
 
 /**

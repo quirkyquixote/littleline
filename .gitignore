@@ -1,0 +1,6 @@
+*.o
+*.so
+examples/llsh
+tests/binding
+tests/buffer
+tests/history

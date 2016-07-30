@@ -17,12 +17,12 @@
  * @ingroup LittleLine
  */
 struct ll_buf {
-    /** The string being built */
-    char *str;
-    /** Number of characters currently allocated */
-    size_t allocated;
-    /** Number of characters currently used */
-    size_t len;
+	/** The string being built */
+	char *str;
+	/** Number of characters currently allocated */
+	size_t allocated;
+	/** Number of characters currently used */
+	size_t len;
 };
 
 /**

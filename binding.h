@@ -4,12 +4,12 @@
 
 /** Type of states in the transition table */
 enum {
-    /** There's no transition for this token */
-    LL_FSM_BAD_STATE,
-    /** Inner state; keep consuming tokens */
-    LL_FSM_INNER_STATE,
-    /** Final state; execute the associate function */
-    LL_FSM_FINAL_STATE
+	/** There's no transition for this token */
+	LL_FSM_BAD_STATE,
+	/** Inner state; keep consuming tokens */
+	LL_FSM_INNER_STATE,
+	/** Final state; execute the associate function */
+	LL_FSM_FINAL_STATE
 };
 
 /** 
@@ -21,15 +21,15 @@ enum {
  * @ingroup LittleLine
  */
 struct ll_fsm_state {
-    /** Type of state */
-    int type;
-    /** Data dependant on the type of state */
-    union {
-        /** For intermediate states, a table with all possible transitions */
-        struct ll_fsm_state **trans;
-        /** For final states data that determines what it actually is */
-        int(*func)(void);
-    } data;
+	/** Type of state */
+	int type;
+	/** Data dependant on the type of state */
+	union {
+		/** For intermediate states, a table with all possible transitions */
+		struct ll_fsm_state **trans;
+		/** For final states data that determines what it actually is */
+		int(*func)(void);
+	} data;
 };
 
 /** 
@@ -37,10 +37,10 @@ struct ll_fsm_state {
  * @ingroup LittleLine
  */
 struct ll_fsm {
-    /** Transition table for the initial state */
-    struct ll_fsm_state **initial;
-    /** Pointer to iterate the machine */
-    struct ll_fsm_state **cur;
+	/** Transition table for the initial state */
+	struct ll_fsm_state **initial;
+	/** Pointer to iterate the machine */
+	struct ll_fsm_state **cur;
 };
 
 /** 
@@ -48,10 +48,10 @@ struct ll_fsm {
  * @ingroup LittleLine
  */
 struct ll_binding {
-    /** A string to be recognized */
-    const char *str;
-    /** Data that identifies the final state */
-    int(*func)(void);
+	/** A string to be recognized */
+	const char *str;
+	/** Data that identifies the final state */
+	int(*func)(void);
 };
 
 /**

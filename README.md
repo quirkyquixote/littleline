@@ -56,11 +56,8 @@ Just ANSI C.
 Installation
 ------------
 
-commandline provices a simple cmake script; to build from scratch:
+commandline provices a simple make script; to build from scratch:
 
-    mkdir build
-    cd build
-    cmake ..
-    make
+    make all
     make install
 
