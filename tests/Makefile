@@ -1,6 +1,10 @@
 
 include ../config.mk
 
+OBJECTS += buffer.o
+OBJECTS += binding.o
+OBJECTS += history.o
+
 PROGRAMS += buffer
 PROGRAMS += binding
 PROGRAMS += history
@@ -17,22 +21,13 @@ test: $(TESTS)
 
 .PHONY: clean-test
 clean-test:
-	@$(RM) *.o
+	@$(RM) $(OBJECTS)
 	@$(RM) $(PROGRAMS)
 
 buffer: buffer.o ../buffer.o
-	$(call colorecho,Linking C executable $@)
-	@$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^
-
 binding: binding.o ../binding.o
-	$(call colorecho,Linking C executable $@)
-	@$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^
-
 history: history.o ../history.o ../buffer.o
-	$(call colorecho,Linking C executable $@)
-	@$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^
 
 test_%: %
-	$(call colorecho,Test $<)
-	@./$<
+	@$(call colorecho,TEST $<); ./$<
 

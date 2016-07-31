@@ -1,21 +1,22 @@
 
 include ../config.mk
 
+OBJECTS += llsh.o
+
 PROGRAMS += llsh
+
+INSTALL_PROGRAMS = $(addprefix $(bindir)/,$(PROGRAMS))
 
 .PHONY: examples
 examples: $(PROGRAMS)
 
 .PHONY: clean-examples
 clean-examples:
-	@$(RM) *.o
+	@$(RM) $(OBJECTS)
 	@$(RM) $(PROGRAMS)
 
 .PHONY: install-examples
-install-examples: examples
-	$(call colorecho,Installing $(BINDIR)/llsh)
-	@$(INSTALL) llsh $(BINDIR)
+install-examples: examples $(INSTALL_PROGRAMS)
 
 llsh: llsh.o
-	$(call colorecho,Linking C executable $@)
-	@$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^ -L.. -llittleline
+	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^ -L.. -llittleline

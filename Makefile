@@ -1,25 +1,24 @@
 
 include config.mk
 
-LITTLELINE_OBJECTS += binding.o
-LITTLELINE_OBJECTS += buffer.o
-LITTLELINE_OBJECTS += history.o
-LITTLELINE_OBJECTS += littleline.o
+OBJECTS += binding.o
+OBJECTS += buffer.o
+OBJECTS += history.o
+OBJECTS += littleline.o
+
+LIBS = liblittleline.so
+INSTALL_LIBS = $(addprefix $(libdir)/,$(LIBS))
 
 .PHONY: all
-all: liblittleline.so
+all: $(LIBS)
 
 .PHONY: clean
 clean:
-	@$(RM) *.o
-	@$(RM) liblittleline.so
+	@$(RM) $(OBJECTS)
+	@$(RM) $(LIBS)
 
 .PHONY: install
-install: all
-	$(call colorecho,Installing $(LIBDIR)/liblittleline.so.$(VERSION))
-	@$(INSTALL) liblittleline.so $(LIBDIR)/liblittleline.so.$(VERSION)
-	$(call colorecho,Installing $(LIBDIR)/liblittleline.so)
-	@cd $(LIBDIR) && ln -s -f liblittleline.so.$(VERSION) liblittleline.so
+install: all $(INSTALL_LIBS)
 
 .PHONY: examples
 examples: all
@@ -48,7 +47,5 @@ clean-test:
 .PHONY: realclean
 realclean: clean clean-test clean-examples
 
-liblittleline.so: $(LITTLELINE_OBJECTS)
-	$(call colorecho,Linking C shared library $@)
-	@$(CC) -shared -Wl,-soname,liblittleline.so.$(VERSION) -o liblittleline.so $^
+liblittleline.so: $(OBJECTS)
 
