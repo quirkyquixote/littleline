@@ -42,8 +42,8 @@ QUIET_INSTALL = @$(call colorecho, INSTALL $@);
 lib%.so: %.o
 	$(QUIET_LINK)$(CC) -shared -Wl,-soname,$@.$(version) -o $@ $^
 
-$(libdir)/%.so: %.so
+$(DESTDIR)$(libdir)/%.so: %.so
 	@$(INSTALL) -d $(@D)
 	$(QUIET_INSTALL)$(INSTALL) $< $@.$(version)
-	@cd $(libdir) && ln -s -f $<.$(version) $<
+	@cd $(DESTDIR)$(libdir) && ln -s -f $<.$(version) $<
 
