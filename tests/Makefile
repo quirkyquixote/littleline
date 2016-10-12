@@ -29,5 +29,5 @@ binding: binding.o ../binding.o
 history: history.o ../history.o ../buffer.o
 
 test_%: %
-	@$(call colorecho,TEST $<); ./$<
+	@echo TEST $<; ./$<
 
