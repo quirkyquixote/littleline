@@ -21,15 +21,9 @@ ALL_LDFLAGS = $(LDFLAGS)
 
 ALL_CFLAGS += -fPIC
 
-define colorecho
-      @tput setaf 7
-      @echo $1
-      @tput sgr0
-endef
-
-QUIET_CC = @$(call colorecho, CC $@);
-QUIET_LINK = @$(call colorecho, LINK $@);
-QUIET_INSTALL = @$(call colorecho, INSTALL $@);
+QUIET_CC = @echo CC $@;
+QUIET_LINK = @echo LINK $@;
+QUIET_INSTALL = @echo INSTALL $@;
 
 %: %.c 
 
