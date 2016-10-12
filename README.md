@@ -56,7 +56,7 @@ Just ANSI C.
 Installation
 ------------
 
-commandline provices a simple make script; to build from scratch:
+LittleLine a simple make script; to build from scratch:
 
     make all
     make install
