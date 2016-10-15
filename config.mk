@@ -4,7 +4,7 @@ INSTALL = install
 RM = rm -f
 
 version = 1.0
-prefix = $(HOME)
+prefix = /usr/local
 libdir = $(prefix)/lib
 
 CPPFLAGS =
