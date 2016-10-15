@@ -45,7 +45,8 @@ clean-test:
 	@make -C tests $@
 
 .PHONY: realclean
-realclean: clean clean-test clean-examples
+realclean:
+	git clean -fdx
 
 liblittleline.so: $(OBJECTS)
 
