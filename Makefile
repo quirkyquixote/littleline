@@ -32,17 +32,13 @@ clean-examples:
 install-examples: install
 	@make -C examples $@
 
-.PHONY: build-test
-build-test: all
-	@make -C tests $@
-
 .PHONY: test
-test: build-test
-	@make -C tests $@
+test: all
+	@make -C tests all
 
 .PHONY: clean-test
 clean-test:
-	@make -C tests $@
+	@make -C tests clean
 
 .PHONY: realclean
 realclean:

@@ -25,6 +25,7 @@ ALL_CFLAGS += -fPIC
 QUIET_CC = @echo CC $@;
 QUIET_LINK = @echo LINK $@;
 QUIET_INSTALL = @echo INSTALL $@;
+QUIET_GEN = @echo GEN $@;
 
 %: %.c 
 

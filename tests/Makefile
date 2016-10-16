@@ -1,33 +1,29 @@
 
 include ../config.mk
 
-OBJECTS += buffer.o
-OBJECTS += binding.o
-OBJECTS += history.o
+OBJS += buffer.o
+OBJS += binding.o
+OBJS += history.o
 
-PROGRAMS += buffer
-PROGRAMS += binding
-PROGRAMS += history
+PROGRAMS = $(OBJS:.o:)
+DEPS = $(OBJS:.o=.d)
+LOGS = $(OBJS:.o=.log)
 
-TESTS += test_buffer
-TESTS += test_binding
-TESTS += test_history
+.PHONY: all
+all: $(LOGS)
+	@for i in $(LOGS); do echo TEST $$i; diff -q $$i $$i.gold; done
 
-.PHONY: build-test
-build-test: $(PROGRAMS)
-
-.PHONY: test
-test: $(TESTS)
-
-.PHONY: clean-test
-clean-test:
-	@$(RM) $(OBJECTS)
-	@$(RM) $(PROGRAMS)
+.PHONY: clean
+clean:
+	$(RM) $(PROGRAMS)
+	$(RM) $(OBJS)
+	$(RM) $(DEPS)
+	$(RM) $(LOGS)
 
 buffer: buffer.o ../buffer.o
 binding: binding.o ../binding.o
 history: history.o ../history.o ../buffer.o
 
-test_%: %
-	@echo TEST $<; ./$<
+%.log: %
+	$(QUIET_GEN)./$< > $@ 2>&1
 
