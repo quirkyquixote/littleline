@@ -4,3 +4,4 @@ examples/llsh
 tests/binding
 tests/buffer
 tests/history
+tests/*.log
