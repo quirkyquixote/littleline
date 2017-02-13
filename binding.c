@@ -61,4 +61,5 @@ int ll_fsm_feed(struct ll_fsm *fsm, unsigned char token, int(**func)(void))
 		*func = next->data.func;
 		return LL_FSM_FINAL_STATE;
 	}
+	return LL_FSM_BAD_STATE;
 }
