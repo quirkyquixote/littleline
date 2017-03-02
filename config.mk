@@ -9,17 +9,15 @@ libdir = $(prefix)/lib
 
 CPPFLAGS =
 
-CFLAGS = -g \
-	 -ansi \
-	 -pedantic \
-	 -Werror \
-	 -Wfatal-errors
+CFLAGS = -g -Werror -Wfatal-errors
 
 LDFLAGS =
 
 ALL_CFLAGS = $(CPPFLAGS) $(CFLAGS)
 ALL_LDFLAGS = $(LDFLAGS)
 
+ALL_CFLAGS += -std=c90
+ALL_CFLAGS += -pedantic
 ALL_CFLAGS += -fPIC
 
 QUIET_CC = @echo CC $@;
