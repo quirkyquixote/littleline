@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #if (defined(__unix__) || defined(unix))
 #include <termios.h>
 #include <stdlib.h>
@@ -152,20 +153,24 @@ static void reprint_line(void)
     old_fmt_len = cl.fmt_len;
     /* Move the cursor to the beginning of the line */
     for (i = 0; i < cl.fmt_cursor; ++i)
-        putchar('\b');
+        write(STDOUT_FILENO, "\b", 1);
     /* Rebuild the formatted string */
     cl.fmt_cursor = -1;
     cl.fmt_len = 0;
     for (it = cl.current; *it; ++it) {
-        c = *it;
         if (it - cl.current == cl.cursor)
             cl.fmt_cursor = cl.fmt_len;
-        if (c < 32)
-            cl.fmt_len += printf("^%c", c + 64);
-        else if (isprint(c))
-            cl.fmt_len += printf("%c", c);
-        else
-            cl.fmt_len += printf("\\x%02X", c);
+        if (*it < 32) {
+		c = *it + 64;
+                write(STDOUT_FILENO, "^", 1);
+                write(STDOUT_FILENO, &c, 1);
+		++cl.fmt_len;
+        } else if (*it <= 0x7F) {
+                write(STDOUT_FILENO, it, 1);
+		++cl.fmt_len;
+	} else {
+                write(STDOUT_FILENO, it, 1);
+	}
     }
     /* If the cursor index is still -1, that means it is actually after the end
      * of the formatted line */
@@ -175,13 +180,13 @@ static void reprint_line(void)
      * deleted some characters: overwrite them with spaces */
     i = cl.fmt_len;
     while (i < old_fmt_len) {
-        putchar(' ');
+        write(STDOUT_FILENO, " ", 1);
         ++i;
     }
     /* Move back the cursor from the end of the printed line to the actual
      * cursor position */
     while (i > cl.fmt_cursor) {
-        putchar('\b');
+        write(STDOUT_FILENO, "\b", 1);
         --i;
     }
 }
