@@ -325,7 +325,8 @@ const char *ll_read(const char *prompt)
 	cl.cursor = 0;
 	cl.fmt_cursor = 0;
 
-	printf("%s ", prompt);
+	write(STDOUT_FILENO, prompt, strlen(prompt));
+	write(STDOUT_FILENO, " ", 1);
 
 	do {
 		reprint_line();
@@ -333,7 +334,7 @@ const char *ll_read(const char *prompt)
 	} while (retval == 0);
 
 	reprint_line();
-	putchar('\n');
+	write(STDOUT_FILENO, "\n", 1);
 
 	if (retval < 0)
 		return NULL;
@@ -555,7 +556,7 @@ int ll_accept_line(void)
 
 int ll_terminate(void)
 {
-	putchar('\n');
+	write(STDOUT_FILENO, "\n", 1);
 	keyboard_deinit();
 	exit(EXIT_FAILURE);
 }
