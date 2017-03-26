@@ -146,6 +146,7 @@ static void reprint_line(void)
 {
 	size_t old_fmt_len;
 	const char *it;
+	const char *end;
 	unsigned char c;
 	int i;
 
@@ -157,19 +158,49 @@ static void reprint_line(void)
 	/* Rebuild the formatted string */
 	cl.fmt_cursor = -1;
 	cl.fmt_len = 0;
-	for (it = cl.current; *it; ++it) {
+	end = cl.current + strlen(cl.current);
+	for (it = cl.current; *it;) {
 		if (it - cl.current == cl.cursor)
 			cl.fmt_cursor = cl.fmt_len;
-		if (*it < 32) {
-			c = *it + 64;
+		c = *it;
+		if (c < 32) {
+			/* Handle special characters */
+			c += 64;
 			write(STDOUT_FILENO, "^", 1);
 			write(STDOUT_FILENO, &c, 1);
+			cl.fmt_len += 2;
+			++it;
+		} else if ((c & 0x80) == 0) {
+			/* Handle plain ASCII */
+			write(STDOUT_FILENO, &c, 1);
 			++cl.fmt_len;
-		} else if (*it <= 0x7F) {
-			write(STDOUT_FILENO, it, 1);
+			++it;
+		} else if ((c & 0xE0) == 0xC0) {
+			/* Handle two-byte utf-8 sequence */
+			if (end - it < 2)
+				break;
+			write(STDOUT_FILENO, it, 2);
 			++cl.fmt_len;
+			it += 2;
+		} else if ((c & 0xF0) == 0xE0) {
+			/* Handle three-byte utf-8 sequence */
+			if (end - it < 3)
+				break;
+			write(STDOUT_FILENO, it, 3);
+			++cl.fmt_len;
+			it += 3;
+		} else if ((c & 0xF8) == 0xF0) {
+			/* Handle four-byte utf-8 sequence */
+			if (end - it < 4)
+				break;
+			write(STDOUT_FILENO, it, 4);
+			++cl.fmt_len;
+			it += 4;
 		} else {
-			write(STDOUT_FILENO, it, 1);
+			/* Handle bad utf-8 sequence */
+			write(STDOUT_FILENO, "?", 1);
+			++cl.fmt_len;
+			++it;
 		}
 	}
 	/* If the cursor index is still -1, that means it is actually after the end
