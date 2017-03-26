@@ -6,7 +6,9 @@ OBJECTS += buffer.o
 OBJECTS += history.o
 OBJECTS += littleline.o
 
-LIBS = liblittleline.so
+LIBS += liblittleline.so
+LIBS += liblittleline.a
+
 INSTALL_LIBS = $(addprefix $(libdir)/,$(LIBS))
 
 .PHONY: all
@@ -45,4 +47,5 @@ realclean:
 	git clean -fdx
 
 liblittleline.so: $(OBJECTS)
+liblittleline.a: $(OBJECTS)
 

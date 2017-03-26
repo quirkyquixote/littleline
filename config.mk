@@ -22,6 +22,7 @@ ALL_CFLAGS += -fPIC
 
 QUIET_CC = @echo CC $@;
 QUIET_LINK = @echo LINK $@;
+QUIET_AR = @echo AR $@;
 QUIET_INSTALL = @echo INSTALL $@;
 QUIET_GEN = @echo GEN $@;
 
@@ -35,6 +36,9 @@ QUIET_GEN = @echo GEN $@;
 
 lib%.so: %.o
 	$(QUIET_LINK)$(CC) -shared -Wl,-soname,$@.$(version) -o $@ $^
+
+lib%.a: %.o
+	$(QUIET_AR)$(AR) rcs $@ $^
 
 $(DESTDIR)$(libdir)/%.so: %.so
 	@$(INSTALL) -d $(@D)

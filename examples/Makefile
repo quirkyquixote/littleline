@@ -15,8 +15,5 @@ clean-examples:
 	@$(RM) $(OBJECTS)
 	@$(RM) $(PROGRAMS)
 
-.PHONY: install-examples
-install-examples: examples $(INSTALL_PROGRAMS)
-
 llsh: llsh.o
-	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^ -L.. -llittleline
+	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^ ../liblittleline.a
