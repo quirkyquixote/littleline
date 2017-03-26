@@ -196,10 +196,21 @@ static void reprint_line(void)
 			write(STDOUT_FILENO, it, 4);
 			++cl.fmt_len;
 			it += 4;
+		} else if ((c & 0xFC) == 0xF8) {
+			/* Handle five-byte utf-8 sequence */
+			if (end - it < 5)
+				break;
+			write(STDOUT_FILENO, it, 5);
+			++cl.fmt_len;
+			it += 5;
 		} else {
 			/* Handle bad utf-8 sequence */
-			write(STDOUT_FILENO, "?", 1);
-			++cl.fmt_len;
+			write(STDOUT_FILENO, "\\x", 2);
+			c = '0' + (*it >> 4);
+			write(STDOUT_FILENO, &c, 1);
+			c = '0' + (*it & 0xF);
+			write(STDOUT_FILENO, &c, 1);
+			cl.fmt_len += 4;
 			++it;
 		}
 	}
@@ -345,7 +356,9 @@ int ll_backward_char(void)
 {
 	if (cl.cursor == 0)
 		return -1;
-	--cl.cursor;
+	do
+		--cl.cursor;
+	while ((cl.current[cl.cursor] & 0xC0) == 0x80);
 	return 0;
 }
 
@@ -353,7 +366,9 @@ int ll_forward_char(void)
 {
 	if (cl.current[cl.cursor] == 0)
 		return -1;
-	++cl.cursor;
+	do
+		++cl.cursor;
+	while ((cl.current[cl.cursor] & 0xC0) == 0x80);
 	return 0;
 }
 
@@ -446,7 +461,16 @@ int ll_delete_char(void)
 	if (cl.current[cl.cursor] == 0)
 		return -1;
 	pop_line();
-	ll_buf_erase(&cl.buffer, cl.cursor, 1);
+	if ((cl.current[cl.cursor] & 0x80) == 0)
+		ll_buf_erase(&cl.buffer, cl.cursor, 1);
+	else if ((cl.current[cl.cursor] & 0xE0) == 0xC0)
+		ll_buf_erase(&cl.buffer, cl.cursor, 2);
+	else if ((cl.current[cl.cursor] & 0xF0) == 0xE0)
+		ll_buf_erase(&cl.buffer, cl.cursor, 3);
+	else if ((cl.current[cl.cursor] & 0xF8) == 0xF0)
+		ll_buf_erase(&cl.buffer, cl.cursor, 4);
+	else if ((cl.current[cl.cursor] & 0xFC) == 0xF8)
+		ll_buf_erase(&cl.buffer, cl.cursor, 5);
 	cl.current = cl.buffer.str;
 	return 0;
 }
