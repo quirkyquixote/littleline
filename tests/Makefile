@@ -1,29 +1,34 @@
 
 include ../config.mk
 
-OBJS += buffer.o
-OBJS += binding.o
-OBJS += history.o
+DIFF = diff -q --ignore-blank-lines --ignore-space-change
+MEMCHECK = valgrind -q --tool=memcheck
 
-PROGRAMS = $(OBJS:.o:)
-DEPS = $(OBJS:.o=.d)
-LOGS = $(OBJS:.o=.log)
+objs += buffer.o
+objs += binding.o
+objs += history.o
+
+bins = $(objs:.o:)
+deps = $(objs:.o=.d)
+logs = $(objs:.o=.log)
 
 .PHONY: all
-all: $(LOGS)
-	@for i in $(LOGS); do echo TEST $$i; diff -q $$i $$i.gold; done
+all: $(logs)
+	@for i in $(logs); do echo TEST $$i; $(DIFF) $$i $$i.gold; done
 
 .PHONY: clean
 clean:
-	$(RM) $(PROGRAMS)
-	$(RM) $(OBJS)
-	$(RM) $(DEPS)
-	$(RM) $(LOGS)
+	$(RM) $(bins)
+	$(RM) $(objs)
+	$(RM) $(deps)
+	$(RM) $(logs)
 
 buffer: buffer.o ../buffer.o
 binding: binding.o ../binding.o
 history: history.o ../history.o ../buffer.o
 
-%.log: %
+%.log: % make-always
 	$(QUIET_GEN)./$< > $@ 2>&1
 
+.PHONY: make-always
+make-always:
