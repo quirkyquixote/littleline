@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../littleline.h"
+#include "../src/littleline.h"
 
 int main(int arc, char *argv[])
 {

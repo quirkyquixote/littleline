@@ -1,6 +1,6 @@
 
 
-#include "../buffer.h"
+#include "../src/buffer.h"
 
 int main (int argc, char *argv[])
 {

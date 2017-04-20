@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../binding.h"
+#include "../src/binding.h"
 
 int six_zeroes(void)
 {

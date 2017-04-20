@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 
-#include "../history.h"
+#include "../src/history.h"
 
 static const char *strings1[] = {
 	"this", "is", "a", "simple", "test", NULL

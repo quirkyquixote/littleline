@@ -23,12 +23,15 @@ clean:
 	$(RM) $(deps)
 	$(RM) $(logs)
 
-buffer: buffer.o ../buffer.o
-binding: binding.o ../binding.o
-history: history.o ../history.o ../buffer.o
+buffer: buffer.o ../src/liblittleline.a
+binding: binding.o ../src/liblittleline.a
+history: history.o ../src/liblittleline.a
 
 %.log: % make-always
 	$(QUIET_GEN)./$< > $@ 2>&1
+
+../src/littleline.a:
+	@make -C ../src liblittleline.a
 
 .PHONY: make-always
 make-always:

@@ -7,13 +7,17 @@ PROGRAMS += llsh
 
 INSTALL_PROGRAMS = $(addprefix $(bindir)/,$(PROGRAMS))
 
-.PHONY: examples
-examples: $(PROGRAMS)
+.PHONY: all
+all: $(PROGRAMS)
 
-.PHONY: clean-examples
-clean-examples:
+.PHONY: clean
+clean:
 	@$(RM) $(OBJECTS)
 	@$(RM) $(PROGRAMS)
 
-llsh: llsh.o
-	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^ ../liblittleline.a
+llsh: llsh.o ../src/liblittleline.a
+	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^
+
+../src/littleline.a:
+	@make -C ../src liblittleline.a
+

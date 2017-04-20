@@ -12,19 +12,15 @@ install:
 	@make -C src install
 
 .PHONY: examples
-examples: all
-	@make -C examples $@
+examples:
+	@make -C examples all
 
 .PHONY: clean-examples
 clean-examples:
-	@make -C examples $@
-
-.PHONY: install-examples
-install-examples: install
-	@make -C examples $@
+	@make -C examples clean
 
 .PHONY: test
-test: all
+test:
 	@make -C tests all
 
 .PHONY: clean-test
