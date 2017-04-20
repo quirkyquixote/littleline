@@ -1,26 +1,15 @@
 
-include config.mk
-
-OBJECTS += binding.o
-OBJECTS += buffer.o
-OBJECTS += history.o
-OBJECTS += littleline.o
-
-LIBS += liblittleline.so
-LIBS += liblittleline.a
-
-INSTALL_LIBS = $(addprefix $(libdir)/,$(LIBS))
-
 .PHONY: all
-all: $(LIBS)
+all:
+	@make -C src all
 
 .PHONY: clean
 clean:
-	@$(RM) $(OBJECTS)
-	@$(RM) $(LIBS)
+	@make -C src clean
 
 .PHONY: install
-install: all $(INSTALL_LIBS)
+install:
+	@make -C src install
 
 .PHONY: examples
 examples: all
@@ -45,7 +34,4 @@ clean-test:
 .PHONY: realclean
 realclean:
 	git clean -fdx
-
-liblittleline.so: $(OBJECTS)
-liblittleline.a: $(OBJECTS)
 

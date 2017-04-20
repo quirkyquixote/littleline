@@ -6,6 +6,7 @@ RM = rm -f
 version = 1.0
 prefix = /usr/local
 libdir = $(prefix)/lib
+includedir = $(prefix)/include/littleline
 
 CPPFLAGS =
 
@@ -16,13 +17,12 @@ LDFLAGS =
 ALL_CFLAGS = $(CPPFLAGS) $(CFLAGS)
 ALL_LDFLAGS = $(LDFLAGS)
 
-ALL_CFLAGS += -std=c90
+ALL_CFLAGS += -std=c99
 ALL_CFLAGS += -pedantic
 ALL_CFLAGS += -fPIC
 
 QUIET_CC = @echo CC $@;
 QUIET_LINK = @echo LINK $@;
-QUIET_AR = @echo AR $@;
 QUIET_INSTALL = @echo INSTALL $@;
 QUIET_GEN = @echo GEN $@;
 
@@ -34,10 +34,10 @@ QUIET_GEN = @echo GEN $@;
 %.o: %.c
 	$(QUIET_CC)$(CC) $(ALL_CFLAGS) -c $<
 
-lib%.so: %.o
+lib%.so:
 	$(QUIET_LINK)$(CC) -shared -Wl,-soname,$@.$(version) -o $@ $^
 
-lib%.a: %.o
+lib%.a:
 	$(QUIET_AR)$(AR) rcs $@ $^
 
 $(DESTDIR)$(libdir)/%.so: %.so
@@ -49,3 +49,6 @@ $(DESTDIR)$(libdir)/%.a: %.a
 	@$(INSTALL) -d $(@D)
 	$(QUIET_INSTALL)$(INSTALL) $< $@
 
+$(DESTDIR)$(includedir)/%.h: %.h
+	@$(INSTALL) -d $(@D)
+	$(QUIET_INSTALL)$(INSTALL) $< $@
