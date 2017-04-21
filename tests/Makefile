@@ -28,7 +28,7 @@ binding: binding.o ../src/liblittleline.a
 history: history.o ../src/liblittleline.a
 
 %.log: % make-always
-	$(QUIET_GEN)./$< > $@ 2>&1
+	$(QUIET_GEN)$(MEMCHECK) ./$< > $@ 2>&1
 
 ../src/littleline.a:
 	@make -C ../src liblittleline.a
