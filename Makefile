@@ -27,6 +27,14 @@ test:
 clean-test:
 	@make -C tests clean
 
+.PHONY: apidoc
+apidoc:
+	doxygen Doxyfile
+
+.PHONY: clean-apidoc
+clean-apidoc:
+	rm -rf apidoc
+
 .PHONY: realclean
 realclean:
 	git clean -fdx

@@ -1,3 +1,8 @@
+/* Copyright 2017 Luis Sanz <luis.sanz@gmail.com> */
+/**
+ * @file
+ * Define ll_history struct and related functions
+ */
 
 #ifndef LITTLELINE_HISTORY_H_
 #define LITTLELINE_HISTORY_H_

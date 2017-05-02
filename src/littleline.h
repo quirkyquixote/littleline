@@ -1,3 +1,8 @@
+/* Copyright 2017 Luis Sanz <luis.sanz@gmail.com> */
+/**
+ * @file
+ * Master header for the littleline library
+ */
 
 #ifndef LITTLELINE_H_
 #define LITTLELINE_H_

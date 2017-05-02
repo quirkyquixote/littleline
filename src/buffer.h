@@ -1,3 +1,8 @@
+/* Copyright 2017 Luis Sanz <luis.sanz@gmail.com> */
+/**
+ * @file
+ * Define ll_buf struct and related functions
+ */
 
 #ifndef LITTLELINE_BUFFER_H_
 #define LITTLELINE_BUFFER_H_

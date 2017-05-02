@@ -1,8 +1,16 @@
+/* Copyright 2017 Luis Sanz <luis.sanz@gmail.com> */
+/**
+ * @file
+ * Define ll_fsm struct and related functions
+ */
 
 #ifndef LITTLELINE_FSM_H_
 #define LITTLELINE_FSM_H_
 
-/** Type of states in the transition table */
+/** 
+ * Type of states in the transition table 
+ * @ingroup LittleLine
+ */
 enum {
 	/** There's no transition for this token */
 	LL_FSM_BAD_STATE,
