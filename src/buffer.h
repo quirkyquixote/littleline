@@ -34,14 +34,14 @@ struct ll_buf {
  * Initialize buffer 
  *
  * @memberof ll_buf
- * @param buf a ll_buf
+ * @param [in] buf a ll_buf
  */
 void ll_buf_init(struct ll_buf *buf);
 /**
  * Destroy buffer
  *
  * @memberof ll_buf
- * @param buf a ll_buf
+ * @param [in] buf a ll_buf
  */
 void ll_buf_deinit(struct ll_buf *buf);
 /**
@@ -50,9 +50,9 @@ void ll_buf_deinit(struct ll_buf *buf);
  * Replaces the contents of _buf_ with _len_ characters from _str_
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param str a string that will be copied to _buf_
- * @param len number of characters to copy
+ * @param [in] buf a ll_buf
+ * @param [in] str a string that will be copied to _buf_
+ * @param [in] len number of characters to copy
  */
 void ll_buf_assign(struct ll_buf *buf, const void *str, size_t len);
 /**
@@ -61,10 +61,10 @@ void ll_buf_assign(struct ll_buf *buf, const void *str, size_t len);
  * Insert _len_ characters of _str_ at position _where_ of _buf_
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param where first character in _buf_ that will be moved
- * @param str a string that will be copied to _buf_
- * @param len number of characters to copy
+ * @param [in] buf a ll_buf
+ * @param [in] where first character in _buf_ that will be moved
+ * @param [in] str a string that will be copied to _buf_
+ * @param [in] len number of characters to copy
  */
 void ll_buf_insert(struct ll_buf *buf, size_t where, const void *str, size_t len);
 /**
@@ -73,9 +73,9 @@ void ll_buf_insert(struct ll_buf *buf, size_t where, const void *str, size_t len
  * Same as ll_buf_insert(_buf_, _buf->len_, _str_, _len_)
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param str a string that will be copied to _buf_
- * @param len number of characters to copy
+ * @param [in] buf a ll_buf
+ * @param [in] str a string that will be copied to _buf_
+ * @param [in] len number of characters to copy
  */
 void ll_buf_append(struct ll_buf *buf, const void *str, size_t len);
 /**
@@ -84,9 +84,9 @@ void ll_buf_append(struct ll_buf *buf, const void *str, size_t len);
  * Same as ll_buf_insert(_buf_, 0, _str_, _len_)
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param str a string that will be copied to _buf_
- * @param len number of characters to copy
+ * @param [in] buf a ll_buf
+ * @param [in] str a string that will be copied to _buf_
+ * @param [in] len number of characters to copy
  */
 void ll_buf_prepend(struct ll_buf *buf, const void *str, size_t len);
 /**
@@ -94,10 +94,10 @@ void ll_buf_prepend(struct ll_buf *buf, const void *str, size_t len);
  *
  * Replace _len_ characters of _buf_ starting at _where_ with the ones from _str_
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param where first character in _buf_ that will be replaced
- * @param str a string that will be copied to _buf_
- * @param len number of characters to copy
+ * @param [in] buf a ll_buf
+ * @param [in] where first character in _buf_ that will be replaced
+ * @param [in] str a string that will be copied to _buf_
+ * @param [in] len number of characters to copy
  */
 void ll_buf_replace(struct ll_buf *buf, size_t where, const void *str, size_t len);
 /**
@@ -106,9 +106,9 @@ void ll_buf_replace(struct ll_buf *buf, size_t where, const void *str, size_t le
  * Erase _len_ characters of _buf_ starting at _where_
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param where first character in _buf_ that will be erased
- * @param len number of characters to erase
+ * @param [in] buf a ll_buf
+ * @param [in] where first character in _buf_ that will be erased
+ * @param [in] len number of characters to erase
  */
 void ll_buf_erase(struct ll_buf *buf, size_t where, size_t len);
 /**
@@ -117,9 +117,9 @@ void ll_buf_erase(struct ll_buf *buf, size_t where, size_t len);
  * Same as ll_buf_insert(_buf_, _where_, &_c_, 1)
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param where first character in _buf_ that will be moved
- * @param c character to insert
+ * @param [in] buf a ll_buf
+ * @param [in] where first character in _buf_ that will be moved
+ * @param [in] c character to insert
  */
 void ll_buf_insert_char(struct ll_buf *buf, size_t where, char c);
 /**
@@ -128,8 +128,8 @@ void ll_buf_insert_char(struct ll_buf *buf, size_t where, char c);
  * Same as ll_buf_append(_buf_, &_c_, 1)
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param c character to append
+ * @param [in] buf a ll_buf
+ * @param [in] c character to append
  */
 void ll_buf_append_char(struct ll_buf *buf, char c);
 /**
@@ -138,8 +138,8 @@ void ll_buf_append_char(struct ll_buf *buf, char c);
  * Same as ll_buf_prepend(_buf_, &_c_, 1)
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param c character to prepend
+ * @param [in] buf a ll_buf
+ * @param [in] c character to prepend
  */
 void ll_buf_prepend_char(struct ll_buf *buf, char c);
 /**
@@ -148,9 +148,9 @@ void ll_buf_prepend_char(struct ll_buf *buf, char c);
  * Same as ll_buf_replace(_buf_, _where_, &_c_, 1)
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param where location of the character to replace
- * @param c character to replace
+ * @param [in] buf a ll_buf
+ * @param [in] where location of the character to replace
+ * @param [in] c character to replace
  */
 void ll_buf_replace_char(struct ll_buf *buf, size_t where, char c);
 /**
@@ -159,8 +159,8 @@ void ll_buf_replace_char(struct ll_buf *buf, size_t where, char c);
  * Same as ll_buf_erase(_buf_, _where_, 1)
  *
  * @memberof ll_buf
- * @param buf a ll_buf
- * @param where location of the character to erase
+ * @param [in] buf a ll_buf
+ * @param [in] where location of the character to erase
  */
 void ll_buf_erase_char(struct ll_buf *buf, size_t where);
 

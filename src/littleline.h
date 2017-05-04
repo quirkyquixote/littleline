@@ -38,7 +38,7 @@ extern struct ll_binding LL_ANSI_KEY_BINDINGS[];
 /**
  * Initialize history
  * 
- * @param max_lines maximum number of lines in the history
+ * @param [in] max_lines maximum number of lines in the history
  * @return 0 on success, -1 on failure
  */
 int ll_set_history(size_t max_lines);
@@ -49,15 +49,15 @@ int ll_set_history(size_t max_lines);
  * the file contains lines, they will be loaded, and then a line will be added
  * to it every time the user enters it
  * 
- * @param max_lines maximum number of lines in the history
- * @param path a file from which to load lines
+ * @param [in] max_lines maximum number of lines in the history
+ * @param [in] path a file from which to load lines
  * @return 0 on success, -1 on failure
  */
 int ll_set_history_with_file(size_t max_lines, const char *path);
 /**
  * Initialize key bindings
  *
- * @param bindings a list of key sequences associated with functions
+ * @param [in] bindings a list of key sequences associated with functions
  * @return 0 on success, -1 on failure
  */
 int ll_set_key_bindings(const struct ll_binding *bindings);
@@ -69,7 +69,7 @@ int ll_set_key_bindings(const struct ll_binding *bindings);
  * Prints _prompt_, then allows the user to edit a line, that is returned when
  * the Return--or a key sequence associated with ll_accept_line()-- is pressed
  *
- * @param prompt a string
+ * @param [in] prompt a string
  * @return the string entered by the user
  */
 const char *ll_read(const char *prompt);

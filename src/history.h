@@ -29,15 +29,15 @@ struct ll_history {
  * Initialize history
  *
  * @memberof ll_history
- * @param hist a ll_history
- * @param max_lines maximum number of lines in _hist_
+ * @param [in] hist a ll_history
+ * @param [in] max_lines maximum number of lines in _hist_
  */
 void ll_history_init(struct ll_history *hist, size_t max_lines);
 /**
  * Destroy history
  *
  * @memberof ll_history
- * @param hist a ll_history
+ * @param [in] hist a ll_history
  */
 void ll_history_deinit(struct ll_history *hist);
 /**
@@ -46,7 +46,7 @@ void ll_history_deinit(struct ll_history *hist);
  * Remove all elements from _hist_
  *
  * @memberof ll_history
- * @param hist a ll_history
+ * @param [in] hist a ll_history
  */
 void ll_history_clear(struct ll_history *hist);
 /**
@@ -56,8 +56,8 @@ void ll_history_clear(struct ll_history *hist);
  * out the oldest stored string.
  *
  * @memberof ll_history
- * @param hist a ll_history
- * @param line a string
+ * @param [in] hist a ll_history
+ * @param [in] line a string
  */
 void ll_history_push(struct ll_history *hist, const char *line);
 /**
@@ -67,8 +67,8 @@ void ll_history_push(struct ll_history *hist, const char *line);
  * stored in the list. 
  *
  * @memberof ll_history
- * @param hist a ll_history
- * @param index index of an entry
+ * @param [in] hist a ll_history
+ * @param [in] index index of an entry
  * @return the string from position _index_, or __NULL__
  */
 const char *ll_history_index(struct ll_history *hist, size_t index);
@@ -78,8 +78,8 @@ const char *ll_history_index(struct ll_history *hist, size_t index);
  * Read the history from a file 
  *
  * @memberof ll_history
- * @param hist a ll_history
- * @param path a file from which to load _hist_'s lines
+ * @param [in] hist a ll_history
+ * @param [in] path a file from which to load _hist_'s lines
  * @return 0 on success, -1 on failure
  */
 int ll_history_read(struct ll_history *hist, const char *path);
@@ -89,8 +89,8 @@ int ll_history_read(struct ll_history *hist, const char *path);
  * Write the history to a file 
  *
  * @memberof ll_history
- * @param hist a ll_history
- * @param path a file to which save _hist_'s lines
+ * @param [in] hist a ll_history
+ * @param [in] path a file to which save _hist_'s lines
  * @return 0 on success, -1 on failure
  */
 int ll_history_write(struct ll_history *hist, const char *path);

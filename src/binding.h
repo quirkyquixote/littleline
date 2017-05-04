@@ -68,15 +68,15 @@ struct ll_binding {
  * Creates a limited finite state machine from the given _paths_
  *
  * @memberof ll_fsm
- * @param fsm a ll_fsm
- * @param paths a list of paths to parse
+ * @param [in] fsm a ll_fsm
+ * @param [in] paths a list of paths to parse
  */
 void ll_fsm_init(struct ll_fsm *fsm, const struct ll_binding *paths);
 /**
  * Destroy
  *
  * @memberof ll_fsm
- * @param fsm a ll_fsm
+ * @param [in] fsm a ll_fsm
  */
 void ll_fsm_deinit(struct ll_fsm *fsm);
 /**
@@ -89,9 +89,9 @@ void ll_fsm_deinit(struct ll_fsm *fsm);
  * table so the next call will start from scratch 
  *
  * @memberof ll_fsm
- * @param fsm a ll_fsm
- * @param token determines the next state
- * @param func return location for a function
+ * @param [in] fsm a ll_fsm
+ * @param [in] token determines the next state
+ * @param [out] func return location for a function
  * @return the type of state the node moves the machine to
  */
 int ll_fsm_feed(struct ll_fsm *fsm, unsigned char token, int(**func)(void));
