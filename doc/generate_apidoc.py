@@ -16,7 +16,7 @@ c_compound = '(struct|enum|union)\s+'+c_ident+'(?=\s*\{)'
 c_anon_compound = '(struct|enum|union)\s+(?=\s*\{)'
 
 c_defargs = '(?:'+c_ident+'(?:, *'+c_ident+')*)?'
-c_define = '(?<=#define) +'+c_ident+' *\( *'+c_defargs+' *\)'
+c_define = '(?<=#define) +'+c_ident+'(?: *\( *'+c_defargs+' *\))?'
 
 c_com_prefix = '(/\*+ ?| *\* ?)'
 c_com_suffix = '\*/'
