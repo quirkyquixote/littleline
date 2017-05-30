@@ -27,13 +27,13 @@ test:
 clean-test:
 	@make -C tests clean
 
-.PHONY: apidoc
-apidoc:
-	doxygen Doxyfile
+.PHONY: html
+html:
+	@make -C doc html
 
-.PHONY: clean-apidoc
-clean-apidoc:
-	rm -rf apidoc
+.PHONY: clean-html
+clean-html:
+	@make -C doc clean-html
 
 .PHONY: realclean
 realclean:
