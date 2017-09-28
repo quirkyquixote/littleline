@@ -33,7 +33,7 @@ struct ll_context {
 	/* All written lines */
 	struct ll_history history;
 	/* To store executed lines */
-	const char *history_file;
+        char *history_file;
 	/* Index of the line currently being viewed */
 	int focus;
 	/* Index of the character in line where the cursor currently is */
@@ -308,7 +308,7 @@ int ll_set_history(size_t max_lines)
 int ll_set_history_with_file(size_t max_lines, const char *path)
 {
 	ll_history_init(&cl.history, max_lines);
-	cl.history_file = path;
+	cl.history_file = strcpy(malloc(strlen(path) + 1), path);
 	return ll_history_read(&cl.history, path);
 }
 
